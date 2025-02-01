@@ -1,0 +1,34 @@
+name: bwh_plgg
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.10
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - scikit-image
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cudatoolkit=11.7
+  - tqdm
+  - nibabel
+  - simpleitk
+  - pydicom
+  - dicom2nifti
+  - pip
+  - ffmpeg
+  - yaml
+  - xz
+  - zlib
+  - pip:
+      - batchgenerators
+      - imageio
+      - matplotlib
+      - requests
+      - pyopenssl
+      - traceback2
+      - unittest2
