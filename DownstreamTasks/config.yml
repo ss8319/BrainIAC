@@ -1,0 +1,33 @@
+data:
+  batch_size: 16  
+  num_workers: 4 
+  train_csv: "/media/sdb/divyanshu/divyanshu/longitudinal_fm/pipeline/idh_csvs/train_set_100.csv"
+  val_csv: "/media/sdb/divyanshu/divyanshu/longitudinal_fm/pipeline/idh_csvs/val_set_100.csv"
+  test_csv: "/media/sdb/divyanshu/divyanshu/longitudinal_fm/pipeline/idh_csvs/test.csv"
+  root_dir: "/media/sdb/divyanshu/divyanshu/longitudinal_fm/datasets/ucsf"
+  collate: 2
+
+optim:
+  lr: 0.0001
+  momentum: 0.9
+  weight_decay: 0.00001
+  clr: "no"
+  max_epochs: 200
+
+logger:
+  save_dir: "./Checkpoints"
+  save_name: "ExperimentName_trainconfigs_checkpoint-{epoch:02d}-{loss:.2f}-{metric:.2f}"
+  run_name: "ExperimentName_trainconfigs"
+  project_name: "brainage"
+
+gpu:
+  visible_device: "1" 
+
+infer:
+  checkpoints: "/media/sdb/divyanshu/divyanshu/longitudinal_fm/pipeline/idh_checkpoints/t1ceflair100_avgpool_oversampled_fmft_endpoint_resnet50_hiddim2048_BCE_batch16lr00001_cosineaneal_dropout0.2_best-model-173-0.77-0.76"
+
+train: 
+  freeze: "no"
+  finetune: "yes"
+  weights: "/media/sdb/divyanshu/divyanshu/foundation_model/code/simclr/checkpoints/WORKS_V3_jointcsvalldataV3_easiertransform_latent2048_adamwnewschrluer_simclr_singlescan_FM_train_RESNET50_1000epcs_batch32_lr0.0001_best-model-epoch=07-train_loss=0.00.ckpt"
+  
