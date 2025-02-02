@@ -1,4 +1,4 @@
-# BrainIAC: Generalize Vision Foundation Model for Brain MRI 
+# BrainIAC: A foundation model for generalized Brain MRI analysis
 
 <p align="center">
   <img src="github_brainiac_logo.png" width="400" alt="BrainIAC Logo"/>
@@ -6,17 +6,25 @@
 
 ## Overview
 
-BrainIAC is a state-of-the-art foundation model for brain MRI analysis, built on a modified ResNet-50 architecture specifically optimized for 3D neuroimaging data. It provides powerful feature extraction capabilities and interpretable saliency maps to support clinical decision making and neuroscience research.
+This repository provides the model and implementation details for BrainIAC, a vision foundation model for generalized Brain MRI analysis. BrainIAC has been trianed using SimCLR on 32,000 brian MR scans. The foundation model has been downstream validated across 6 different tasks with wide ranging endpoint difficulties - 
+- MR Sequence Classification
+- Brain age prediction
+- IDH Mutation classification (IDH Mutant Vs Wildtype)
+- Overall survival for GBM subjects
+- Mild Cognitive impairment (MCI) classification (MCI Vs Healthy Control)
+- Time to stroke onset prediction
 
-## 🌟 Key Features
+The core of BrainIAC is a 3D ResNEt50 model, which takes in complete 3D Brain MR volume to generate robust adaptable representations that are downstream transferable. For more insights checkout the preprint [Here]([https://website-name.com)](https://www.medrxiv.org/content/10.1101/2024.12.02.24317992v1)
 
-- **Robust Feature Extraction**: Extract 2048-dimensional feature vectors from brain MRI scans
-- **Interpretable Results**: Generate saliency maps to visualize model attention
-- **Clinical Integration**: Easy-to-use interface for clinical workflows
-- **Research Ready**: Flexible architecture for transfer learning and adaptation
-- **Production Grade**: Optimized for both research and clinical deployment
+## Key Features
 
-## 🚀 Quick Start
+- **Radiomics Feature Extraction**: Extract 2048-dimensional feature vectors from brain MRI scans
+- **Saliency Map Visualization**: Generate saliency maps to visualize model attention
+- **Downstream Task Train/Infer**: Infer or train the downstream models
+- **Use as a library**: Run and build on top of BrainIAC and the downstream models via python library 
+- **Plug and play docker**: Plug and play with BrainIAC and downstream models via docker
+
+## Quick Start
 
 ### Installation
 
