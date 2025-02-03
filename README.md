@@ -26,7 +26,7 @@ The core of BrainIAC is a 3D ResNet50 model, which takes in complete 3D Brain MR
 - **Use as a library**: Run and build on top of BrainIAC and the downstream models via python library 
 - **Plug and play docker**: Plug and play with BrainIAC and downstream models via docker
 
-## model checkpoints
+## Model checkpoints
 Download the BrainIAC and downstream model checkpoints here : [Model Checkpoints](https://drive.google.com/drive/folders/13xMyLS8vy07dNgWHyXDR4A-O_m7hgZZQ?usp=sharing)
 
 
