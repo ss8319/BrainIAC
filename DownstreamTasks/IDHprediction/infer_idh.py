@@ -76,7 +76,7 @@ class IDHDataset(MedicalImageDatasetBalancedIntensity3D):
 #============================
 #  INFERENCE CLASS
 #============================
-class MCIInference(BaseConfig):
+class IDHInference(BaseConfig):
     """
     Inference class for MCI classification model.
     """
