@@ -17,38 +17,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import nibabel as nib
 
 
-def calculate_metrics(pred_probs, pred_labels, true_labels):
-    """
-    classification metrics.
-    Args:
-        pred_probs (numpy.ndarray): Predicted probabilities
-        pred_labels (numpy.ndarray): Predicted labels
-        true_labels (numpy.ndarray): Ground truth labels
-        
-    Returns:
-        dict: Dictionary containing accuracy, precision, recall, F1, and AUC
-    """
-    accuracy = accuracy_score(true_labels, pred_labels)
-    precision = precision_score(true_labels, pred_labels)
-    recall = recall_score(true_labels, pred_labels)
-    f1 = f1_score(true_labels, pred_labels)
-    auc = roc_auc_score(true_labels, pred_probs)
-    
-    return {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'f1': f1,
-        'auc': auc
-    }
 
 
 #============================
-# CUSTOM DATASET CLASSES TO LAOD TWO MODALITIES
+# CUSTOM DATASET CLASSES TO LAOD FOUR MODALITIES
 #============================
 
-class IDHDatasetVal(MedicalImageDatasetBalancedIntensity3D):
-    """Dataset class for IDH prediction that loads both T1CE and FLAIR modalities"""
+class OSDatasetVal(MedicalImageDatasetBalancedIntensity3D):
+    """Dataset class for OS prediction that loads T1CE, FLAIR, T1 and T2 modalities"""
     
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
@@ -58,11 +34,12 @@ class IDHDatasetVal(MedicalImageDatasetBalancedIntensity3D):
         pat_id = str(self.dataframe.loc[idx, 'pat_id'])
         label = self.dataframe.loc[idx, 'label']
         scan_list = []
+        # Load T1CE, FLAIR, T1 and T2 modalities
+        modalities = ["T1", "T2", "T1GD", "FLAIR"]
+        data_dir = os.path.join(self.root_dir, "UPENN-GBM", "data")
 
-        # Load both T1CE and FLAIR modalities
-        modalities = ['T1c', 'FLAIR']
         for modality in modalities:
-            img_name = os.path.join(self.root_dir, f"{modality}/{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(data_dir, pat_id, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
 
@@ -75,8 +52,8 @@ class IDHDatasetVal(MedicalImageDatasetBalancedIntensity3D):
         }
         return sample
     
-class IDHDatasetTrain(TransformationMedicalImageDatasetBalancedIntensity3D):
-    """Dataset class for IDH prediction that loads both T1CE and FLAIR modalities"""
+class OSDatasetTrain(TransformationMedicalImageDatasetBalancedIntensity3D):
+    """Dataset class for OS prediction that loads T1CE, FLAIR, T1 and T2 modalities"""
     
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
@@ -84,13 +61,15 @@ class IDHDatasetTrain(TransformationMedicalImageDatasetBalancedIntensity3D):
 
         # Load the basic info from csv
         pat_id = str(self.dataframe.loc[idx, 'pat_id'])
-        label = self.dataframe.loc[idx, 'label']
+        label = self.dataframe.loc[idx, 'survival']
         scan_list = []
 
-        # Load both T1CE and FLAIR modalities
-        modalities = ['T1c', 'FLAIR']
+        # Load T1CE, FLAIR, T1 and T2 modalities
+        modalities = ["T1", "T2", "T1GD", "FLAIR"]
+        data_dir = os.path.join(self.root_dir, "UPENN-GBM", "data")
+
         for modality in modalities:
-            img_name = os.path.join(self.root_dir, f"{modality}/{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(data_dir, pat_id, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
 
@@ -107,9 +86,9 @@ class IDHDatasetTrain(TransformationMedicalImageDatasetBalancedIntensity3D):
 #  TRAINER CLASS
 #============================
 
-class MCITrainer(BaseConfig):
+class OSTrainer(BaseConfig):
     """
-    trainer class for MCI classification 
+    trainer class for OS prediction
     """
 
     def __init__(self):
@@ -128,9 +107,8 @@ class MCITrainer(BaseConfig):
         )
         
     def setup_model(self):
-        self.backbone = Backbone()  # Modified for 2 input channels
-        # Change classifier to output 1 value for binary classification
-        self.classifier = Classifier(d_model=2048, num_classes=1)
+        self.backbone = Backbone()  
+        self.classifier = Classifier(d_model=2048)
         self.model = SingleScanModelBP(self.backbone, self.classifier)
         
         # Load weights from brainiac
@@ -155,11 +133,11 @@ class MCITrainer(BaseConfig):
     ## spinup dataloaders
     def setup_data(self):
         config = self.get_config()
-        self.train_dataset = IDHDatasetTrain(
+        self.train_dataset = OSDatasetTrain(
             csv_path=config['data']['train_csv'],
             root_dir=config["data"]["root_dir"]
         )
-        self.val_dataset = IDHDatasetVal(
+        self.val_dataset = OSDatasetVal(
             csv_path=config['data']['val_csv'],
             root_dir=config["data"]["root_dir"]
         )
@@ -214,11 +192,11 @@ class MCITrainer(BaseConfig):
             train_loss = self.train_epoch(epoch, max_epochs)
             val_loss, metrics = self.validate_epoch(epoch, max_epochs)
             
-            # Save best model based on validation loss and F1 score
+            # Save best model based on validation loss and AUC score
             if  metrics['auc'] > best_metrics['auc']:
                 print(f"New best model found!")
                 print(f"Improved Val Loss from {best_metrics['val_loss']:.4f} to {val_loss:.4f}")
-                print(f"Improved F1 from {best_metrics['f1']:.4f} to {metrics['f1']:.4f}")
+                print(f"Improved AUC from {best_metrics['auc']:.4f} to {metrics['auc']:.4f}")
                 best_metrics.update(metrics)
                 best_metrics['val_loss'] = val_loss
                 self.save_checkpoint(epoch, val_loss, metrics)
@@ -315,10 +293,35 @@ class MCITrainer(BaseConfig):
         }
         save_path = os.path.join(
             config['logger']['save_dir'],
-            config['logger']['save_name'].format(epoch=epoch, loss=loss, metric=metrics['f1'])
+            config['logger']['save_name'].format(epoch=epoch, loss=loss, metric=metrics['auc'])
         )
         torch.save(checkpoint, save_path)
+        
+def calculate_metrics(pred_probs, pred_labels, true_labels):
+    """
+    classification metrics.
+    Args:
+        pred_probs (numpy.ndarray): Predicted probabilities
+        pred_labels (numpy.ndarray): Predicted labels
+        true_labels (numpy.ndarray): Ground truth labels
+        
+    Returns:
+        dict: Dictionary containing accuracy, precision, recall, F1, and AUC
+    """
+    accuracy = accuracy_score(true_labels, pred_labels)
+    precision = precision_score(true_labels, pred_labels)
+    recall = recall_score(true_labels, pred_labels)
+    f1 = f1_score(true_labels, pred_labels)
+    auc = roc_auc_score(true_labels, pred_probs)
+    
+    return {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1,
+        'auc': auc
+    }
 
 if __name__ == "__main__":
-    trainer = MCITrainer()
+    trainer = OSTrainer()
     trainer.train()

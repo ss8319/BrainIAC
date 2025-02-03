@@ -4,48 +4,20 @@ import os
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.cuda.amp import autocast
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import numpy as np
 import sys
 import nibabel as nib
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dataset2 import MedicalImageDatasetBalancedIntensity3D
 from model import Backbone, SingleScanModelBP, Classifier
-from utils import BaseConfig
-
-
-
-def calculate_metrics(pred_probs, pred_labels, true_labels):
-    """
-    classification metrics.
-    Args:
-        pred_probs (numpy.ndarray): Predicted probabilities
-        pred_labels (numpy.ndarray): Predicted labels
-        true_labels (numpy.ndarray): Ground truth labels
-        
-    Returns:
-        dict: Dictionary containing accuracy, precision, recall, F1, and AUC metrics
-    """
-    accuracy = accuracy_score(true_labels, pred_labels)
-    precision = precision_score(true_labels, pred_labels)
-    recall = recall_score(true_labels, pred_labels)
-    f1 = f1_score(true_labels, pred_labels)
-    auc = roc_auc_score(true_labels, pred_probs)
-    
-    return {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'f1': f1,
-        'auc': auc
-    }
+from utils import BaseConfig, plot_km_curve, calculate_metrics
 
 
 #============================
 #  CUSTOM DATASET TO LOAD T1CE AND FLAIR PER SCAN 
 #============================
-class IDHDataset(MedicalImageDatasetBalancedIntensity3D):
-    """Dataset class for IDH prediction that loads both T1CE and FLAIR modalities"""
+class OSDataset(MedicalImageDatasetBalancedIntensity3D):
+    """Dataset class for OS prediction that loads T1CE, FLAIR, T1 and T2 modalities"""
     
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
@@ -55,13 +27,16 @@ class IDHDataset(MedicalImageDatasetBalancedIntensity3D):
         pat_id = str(self.dataframe.loc[idx, 'pat_id'])
         label = self.dataframe.loc[idx, 'label']
         scan_list = []
+        
+        # Load T1CE, FLAIR, T1 and T2 modalities
+        modalities = ["T1", "T2", "T1GD", "FLAIR"]
+        data_dir = os.path.join(self.root_dir, "UPENN-GBM", "data")
 
-        # Load both T1CE and FLAIR modalities
-        modalities = ['T1c', 'FLAIR']
         for modality in modalities:
-            img_name = os.path.join(self.root_dir, f"{modality}/{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(data_dir, pat_id, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
+
 
         # Use the same transform from parent class
         transformed_scans = self.transform(scan_list)
@@ -76,9 +51,9 @@ class IDHDataset(MedicalImageDatasetBalancedIntensity3D):
 #============================
 #  INFERENCE CLASS
 #============================
-class MCIInference(BaseConfig):
+class OSInference(BaseConfig):
     """
-    Inference class for MCI classification model.
+    Inference class for OS model.
     """
 
     def __init__(self):
@@ -102,8 +77,18 @@ class MCIInference(BaseConfig):
     ## spin up data loaders
     def setup_data(self):
         config = self.get_config()
+        self.train_dataset = OSDataset(
+            csv_path=config['data']['train_csv'],
+            root_dir=config["data"]["root_dir"]
+        )
+        self.train_loader = DataLoader(
+            self.train_dataset,
+            batch_size=1,
+            shuffle=False,
+            num_workers=1
+        )
         
-        self.test_dataset = IDHDataset(
+        self.test_dataset = OSDataset(
             csv_path=config["data"]["test_csv"],
             root_dir=config["data"]["root_dir"]
         )
@@ -111,64 +96,84 @@ class MCIInference(BaseConfig):
             self.test_dataset,
             batch_size=1,
             shuffle=False,
-            collate_fn=self.custom_collate,   ## set custom collate to 2 for including t1ce and flair
+            collate_fn=self.custom_collate,   ## set custom collate to 4 for including t1ce, flair, t1 and t2
             num_workers=1
         )
             
     def infer(self):
         """
-        Run inference pass
-        
+        Run inference pass for training set and test set
+        Inference on training set to determine classification
+        threshold for risk stratification
         Returns:
             dict: Dictionary with evaluation metrics
         """
-        results_df = pd.DataFrame(columns=['PredictedProb', 'PredictedLabel', 'TrueLabel'])
-        all_labels = []
-        all_predictions = []
-        all_probs = []
         
-        with torch.no_grad():
-            for sample in tqdm(self.test_loader, desc="Inference", unit="batch"):
-                inputs = sample['image'].to(self.device)
-                labels = sample['label'].float().to(self.device)
-                
-                with autocast():
-                    outputs = self.model(inputs)
-                
-                probs = torch.sigmoid(outputs).cpu().numpy().flatten()
-                preds = (probs > 0.5).astype(int)
-                
-                all_labels.extend(labels.cpu().numpy().flatten())
-                all_predictions.extend(preds)
-                all_probs.extend(probs)
-                
-                result = pd.DataFrame({
-                    'PredictedProb': probs,
-                    'PredictedLabel': preds,
-                    'TrueLabel': labels.cpu().numpy().flatten()
-                })
-                results_df = pd.concat([results_df, result], ignore_index=True)
+        def perform_inference(data_loader, dataset_name):
+            results_df = pd.DataFrame(columns=['PredictedProb', 'PredictedLabel', 'PredictedRisk', 'TrueLabel', 'pat_id'])
+            all_labels = []
+            all_predictions = []
+            all_probs = []
+            
+            with torch.no_grad():
+                for sample in tqdm(data_loader, desc=f"Inference ({dataset_name})", unit="batch"):
+                    inputs = sample['image'].to(self.device)
+                    labels = sample['label'].float().to(self.device)
+                    pat_ids = sample['pat_id']
+                    with autocast():
+                        outputs = self.model(inputs)
+                    
+                    probs = torch.sigmoid(outputs).cpu().numpy().flatten()
+                    preds = (probs > 0.5).astype(int)
+                    
+                    all_labels.extend(labels.cpu().numpy().flatten())
+                    all_predictions.extend(preds)
+                    all_probs.extend(probs)
+                    
+                    result = pd.DataFrame({
+                        'PredictedProb': probs,
+                        'PredictedLabel': preds,
+                        'PredictedRisk': 1.0 - probs,
+                        'TrueLabel': labels.cpu().numpy().flatten(),
+                        'pat_id': pat_ids
+                    })
+                    results_df = pd.concat([results_df, result], ignore_index=True)
+
+            # log metrics 
+            metrics = calculate_metrics(
+                np.array(all_probs),
+                np.array(all_predictions),
+                np.array(all_labels)
+            )
+            
         
-        # log metrics 
-        metrics = calculate_metrics(
-            np.array(all_probs),
-            np.array(all_predictions),
-            np.array(all_labels)
-        )
-        
-    
-        print("\nTest Set Metrics:")
-        print(f"Accuracy: {metrics['accuracy']:.4f}")
-        print(f"Precision: {metrics['precision']:.4f}")
-        print(f"Recall: {metrics['recall']:.4f}")
-        print(f"F1 Score: {metrics['f1']:.4f}")
-        print(f"AUC: {metrics['auc']:.4f}")
+            print("\nTest Set Metrics:")
+            print(f"Accuracy: {metrics['accuracy']:.4f}")
+            print(f"Precision: {metrics['precision']:.4f}")
+            print(f"Recall: {metrics['recall']:.4f}")
+            print(f"F1 Score: {metrics['f1']:.4f}")
+            print(f"AUC: {metrics['auc']:.4f}")
+            
+
+            
+            return results_df
+
+        infer_on_train = perform_inference(self.train_loader, "Train")        
+        infer_on_test = perform_inference(self.test_loader, "Test")
+
+        clinical_df = pd.read_csv("../clinical/clinical_filtered.csv")
+        clinical_df = clinical_df[["pat_id", "survival_years", "deadstatus_event", "survival"]]
+        split_median = infer_on_train["PredictedRisk"].median()
+        merged_results = infer_on_test.merge(clinical_df,how = "left")[["pat_id", "PredictedRisk", "survival_years","deadstatus_event", "survival"]]
+        merged_results['group'] = merged_results["PredictedRisk"].apply(lambda x: 'Low Risk' if x < split_median  else 'High Risk')
+        _ = plot_km_curve(merged_results)
         
         # Save results
-        results_df.to_csv('mci_classification_predictions.csv', index=False)
-        
-        return metrics
+        infer_on_test.to_csv('mci_classification_predictions.csv', index=False)
+
+
+
 
 if __name__ == "__main__":
-    inferencer = MCIInference()
+    inferencer = OSInference()
     metrics = inferencer.infer()
