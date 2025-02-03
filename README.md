@@ -81,6 +81,7 @@ python get_brainiac_features.py \
     --output_csv features.csv \
     --root_dir /path/to/data
 ```
+The resultant features will be stored in the features.csv file
 
 ## Saliency map visualization
 
