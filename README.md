@@ -1,7 +1,7 @@
 # BrainIAC: A foundation model for generalized Brain MRI analysis
 
 <p align="center">
-  <img src="pictures/brainiac.jpeg" width="800" alt="BrainIAC Logo"/>
+  <img src="pictures/brainiac.jpeg" width="900" alt="BrainIAC Logo"/>
 </p>
 
 ## Overview
