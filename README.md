@@ -6,7 +6,7 @@
 
 ## Overview
 
-This repository provides the model and implementation details for BrainIAC, a vision foundation model for generalized Brain MRI analysis. BrainIAC has been trianed using SimCLR on 32,000 brian MR scans. The foundation model has been downstream validated across 6 different tasks with wide ranging endpoint difficulties - 
+This repository provides the model and implementation details for BrainIAC, a vision foundation model for generalized Brain MRI analysis. BrainIAC has been trained using SimCLR on 32,000 brain MR scans. The foundation model has been downstream validated across 6 different tasks with wide ranging endpoint difficulties - 
 - MR Sequence Classification
 - Brain age prediction
 - IDH Mutation classification (IDH Mutant Vs Wildtype)
@@ -14,17 +14,20 @@ This repository provides the model and implementation details for BrainIAC, a vi
 - Mild Cognitive impairment (MCI) classification (MCI Vs Healthy Control)
 - Time to stroke onset prediction
 
-The core of BrainIAC is a 3D ResNEt50 model, which takes in complete 3D Brain MR volume to generate robust adaptable representations that are downstream transferable. For more insights checkout the preprint [Here](https://www.medrxiv.org/content/10.1101/2024.12.02.24317992v1)
+The core of BrainIAC is a 3D ResNet50 model, which takes in complete 3D Brain MR volume to generate robust adaptable representations that are downstream transferable. For more insights checkout the preprint [Here](https://www.medrxiv.org/content/10.1101/2024.12.02.24317992v1)
 
 ## Key Features
 
 - **Setup and installation**: Setup the environment and install BrainIAC and the downstream models
 - **Preprocessing**: Preprocess the brain MRI scans for training and inference
-- **Radiomics Feature Extraction**: Extract 2048-dimensional feature vectors from brain MRI scans
+- **BrainIAC Feature Extraction**: Extract 2048-dimensional feature vectors from brain MRI scans
 - **Saliency Map Visualization**: Generate saliency maps to visualize model attention
 - **Downstream Task Train/Infer**: Infer or train the downstream models
 - **Use as a library**: Run and build on top of BrainIAC and the downstream models via python library 
 - **Plug and play docker**: Plug and play with BrainIAC and downstream models via docker
+
+## model checkpoints
+Download the BrainIAC and downstream model checkpoints here : [Model Checkpoints](https://drive.google.com/drive/folders/13xMyLS8vy07dNgWHyXDR4A-O_m7hgZZQ?usp=sharing)
 
 
 ## Setup and Installation
@@ -64,7 +67,7 @@ python mri_preprocess_3d.py \
 The preprocessed images will stored in "/output_path/nnunet/imagesTs/" directory. 
 
 
-## Radiomics Feature Extraction
+## BrainIAC Feature Extraction
 
 To extract the radiomics features:
 1. Ensure your image filenames follow the format: `id_scandate.nii.gz`
@@ -107,7 +110,7 @@ To visualize the saliency maps overlaid on the original scans, use the provided 
 
 ## Downstream tasks
 
-BrainIAC supports multiple downstream tasks through a common pipeline. The pipeline consists of:
+BrainIAC was validated on multiple downstream tasks through a common pipeline. 
 
 - **Common Components**:
   - `config.yml`: Central configuration file for all tasks
@@ -115,7 +118,7 @@ BrainIAC supports multiple downstream tasks through a common pipeline. The pipel
   - `dataset2.py`: Data loading and augmentation pipelines
   - `utils.py`: Shared utilities and helper functions
 
-### General Workflow
+### Pipeline 
 
 1. **Data Preprocessing**:
    Follow the preprocessing steps outlined in the [Preprocessing](#preprocessing) section above:
@@ -165,12 +168,12 @@ BrainIAC supports multiple downstream tasks through a common pipeline. The pipel
 Predict brain age from T1-weighted MRI:
 ```bash
 ## set config["data"]["collate"] = 1 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/Brainage/train_brainage.py
+python -m Brainage.train_brainage
 
 # Inference
-python DownstreamTasks/Brainage/infer_brainage.py
+python -m Brainage.infer_brainage
 ```
 
 #### 2. IDH Mutation Classification
@@ -183,12 +186,12 @@ python DownstreamTasks/Brainage/infer_brainage.py
 Binary classification of IDH mutation status using T1CE and FLAIR:
 ```bash
 ## set config["data"]["collate"] = 2 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/IDHprediction/train_idh.py
+python -m IDHprediction.train_idh
 
 # Inference
-python DownstreamTasks/IDHprediction/infer_idh.py
+python -m IDHprediction.infer_idh
 ```
 
 #### 3. MCI Classification
@@ -201,12 +204,12 @@ python DownstreamTasks/IDHprediction/infer_idh.py
 Binary classification of Mild Cognitive Impairment vs healthy control from T1w images:
 ```bash
 ## set config["data"]["collate"] = 1 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/MCIclassification/train_mci.py
+python -m MCIclassification.train_mci
 
 # Inference
-python DownstreamTasks/MCIclassification/infer_mci.py
+python -m MCIclassification.infer_mci
 ```
 
 #### 4. Overall Survival Prediction
@@ -219,12 +222,12 @@ python DownstreamTasks/MCIclassification/infer_mci.py
 Predicts overall survival for GBM patients using T1CE, T1w, T2w and FLAIR:
 ```bash
 ## set config["data"]["collate"] = 4 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/OverallSurvival/train_os.py
+python -m OverallSurvival.train_os
 
 # Inference
-python DownstreamTasks/OverallSurvival/infer_os.py
+python -m OverallSurvival.infer_os
 ```
 
 #### 5. Sequence Classification
@@ -237,12 +240,12 @@ python DownstreamTasks/OverallSurvival/infer_os.py
 Multi-class classification of MR sequences:
 ```bash
 ## set config["data"]["collate"] = 1 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/SequenceClassification/train_sequence.py
+python -m SequenceClassification.train_sequence
 
 # Inference
-python DownstreamTasks/SequenceClassification/infer_sequence.py
+python -m SequenceClassification.infer_sequence
 ```
 
 #### 6. Time to Stroke Prediction
@@ -255,12 +258,12 @@ python DownstreamTasks/SequenceClassification/infer_sequence.py
 Regression model for stroke onset prediction from T1w images:
 ```bash
 ## set config["data"]["collate"] = 1 for single scan framework
-
+cd DownstreamTasks
 # Training
-python DownstreamTasks/timetostroke/train_stroke.py
+python -m timetostroke.train_stroke
 
 # Inference
-python DownstreamTasks/timetostroke/infer_stroke.py
+python -m timetostroke.infer_stroke
 ```
 
 ## Use as a library
