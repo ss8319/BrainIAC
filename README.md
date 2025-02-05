@@ -171,6 +171,7 @@ Predict brain age from T1-weighted MRI:
 ## set config["data"]["collate"] = 1 for single scan framework
 cd DownstreamTasks
 # Training
+## change the config["train"]["weights"] to the path to the brainiac weights
 python -m Brainage.train_brainage
 
 # Inference
@@ -189,6 +190,7 @@ Binary classification of IDH mutation status using T1CE and FLAIR:
 ## set config["data"]["collate"] = 2 for single scan framework
 cd DownstreamTasks
 # Training
+## change the config["train"]["weights"] to the path to the brainiac weights
 python -m IDHprediction.train_idh
 
 # Inference
@@ -207,6 +209,7 @@ Binary classification of Mild Cognitive Impairment vs healthy control from T1w i
 ## set config["data"]["collate"] = 1 for single scan framework
 cd DownstreamTasks
 # Training
+## change the config["train"]["weights"] to the path to the brainiac weights
 python -m MCIclassification.train_mci
 
 # Inference
@@ -243,6 +246,7 @@ Multi-class classification of MR sequences:
 ## set config["data"]["collate"] = 1 for single scan framework
 cd DownstreamTasks
 # Training
+## change the config["train"]["weights"] to the path to the brainiac weights
 python -m SequenceClassification.train_sequence
 
 # Inference
@@ -261,6 +265,7 @@ Regression model for stroke onset prediction from T1w images:
 ## set config["data"]["collate"] = 1 for single scan framework
 cd DownstreamTasks
 # Training
+## change the config["train"]["weights"] to the path to the brainiac weights
 python -m timetostroke.train_stroke
 
 # Inference
