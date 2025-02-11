@@ -60,9 +60,9 @@ class IDHDatasetVal(MedicalImageDatasetBalancedIntensity3D):
         scan_list = []
 
         # Load both T1CE and FLAIR modalities
-        modalities = ['T1c', 'FLAIR']
+        modalities = ['t1c', 't2f']
         for modality in modalities:
-            img_name = os.path.join(self.root_dir, f"{modality}/{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(self.root_dir, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
 

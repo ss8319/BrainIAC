@@ -61,7 +61,7 @@ class SequenceInference(BaseConfig):
         self.model = SingleScanModel(self.backbone, self.classifier)
         
         # Load weights
-        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device)
+        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device, weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model = self.model.to(self.device)
         self.model.eval()
@@ -123,7 +123,7 @@ class SequenceInference(BaseConfig):
                 results_df = pd.concat([results_df, result], ignore_index=True)
         
         # log metrics 
-        metrics = calculate_metrics(
+        """metrics = calculate_metrics(
             np.array(all_probs),
             np.array(all_predictions),
             np.array(all_labels)
@@ -134,10 +134,10 @@ class SequenceInference(BaseConfig):
         print(f"Precision: {metrics['precision']:.4f}")
         print(f"Recall: {metrics['recall']:.4f}")
         print(f"F1 Score: {metrics['f1']:.4f}")
-        print(f"AUC: {metrics['auc']:.4f}")
+        print(f"AUC: {metrics['auc']:.4f}")"""
         
         # Save results
-        results_df.to_csv('sequence_classification_predictions.csv', index=False)
+        results_df.to_csv('./data/output/sequence_classification_predictions.csv', index=False)
         
         return metrics
 

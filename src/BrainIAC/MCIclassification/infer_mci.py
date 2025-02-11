@@ -60,8 +60,8 @@ class MCIInference(BaseConfig):
         self.model = SingleScanModelBP(self.backbone, self.classifier)
         
         # Load weights
-        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device)
-        self.model.load_state_dict(checkpoint["model_state_dict"])
+        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device, weights_only=False)
+        self.model.load_state_dict(checkpoint["model_state_dict"], strict=False)
         self.model = self.model.to(self.device)
         self.model.eval()
         print("Model and checkpoint loaded!")
@@ -131,7 +131,7 @@ class MCIInference(BaseConfig):
         print(f"AUC: {metrics['auc']:.4f}")"""
         
         # Save results
-        results_df.to_csv('mci_classification_predictions.csv', index=False)
+        results_df.to_csv('./data/output/mci_classification_predictions.csv', index=False)
         
         return None
 

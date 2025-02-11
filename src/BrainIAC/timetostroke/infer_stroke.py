@@ -52,7 +52,7 @@ class StrokeTimeInference(BaseConfig):
         self.model = SingleScanModel(self.backbone, self.classifier)
         
         # Load weights
-        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device)
+        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device, weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model = self.model.to(self.device)
         self.model.eval()
@@ -127,7 +127,7 @@ class StrokeTimeInference(BaseConfig):
         }
         
         # Save results
-        results_df.to_csv('stroke_time_predictions.csv', index=False)
+        results_df.to_csv('./data/output/stroke_time_predictions.csv', index=False)
         ## save the output metrrics 
         #pd.DataFrame([stats]).to_json('stroke_time_metrics.json')
         

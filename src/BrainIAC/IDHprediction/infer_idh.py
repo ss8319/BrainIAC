@@ -57,9 +57,9 @@ class IDHDataset(MedicalImageDatasetBalancedIntensity3D):
         scan_list = []
 
         # Load both T1CE and FLAIR modalities
-        modalities = ['T1c', 'FLAIR']
+        modalities = ['t1c', 't2f']
         for modality in modalities:
-            img_name = os.path.join(self.root_dir, f"{modality}/{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(self.root_dir, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
 
@@ -93,7 +93,7 @@ class IDHInference(BaseConfig):
         self.model = SingleScanModelBP(self.backbone, self.classifier)
         
         # Load weights
-        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device)
+        checkpoint = torch.load(config["infer"]["checkpoints"], map_location=self.device, weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model = self.model.to(self.device)
         self.model.eval()
@@ -150,7 +150,7 @@ class IDHInference(BaseConfig):
                 results_df = pd.concat([results_df, result], ignore_index=True)
         
         # log metrics 
-        metrics = calculate_metrics(
+        """metrics = calculate_metrics(
             np.array(all_probs),
             np.array(all_predictions),
             np.array(all_labels)
@@ -162,13 +162,13 @@ class IDHInference(BaseConfig):
         print(f"Precision: {metrics['precision']:.4f}")
         print(f"Recall: {metrics['recall']:.4f}")
         print(f"F1 Score: {metrics['f1']:.4f}")
-        print(f"AUC: {metrics['auc']:.4f}")
+        print(f"AUC: {metrics['auc']:.4f}")"""
         
         # Save results
-        results_df.to_csv('mci_classification_predictions.csv', index=False)
+        results_df.to_csv('./data/output/idh_classification_predictions.csv', index=False)
         
         return metrics
 
 if __name__ == "__main__":
-    inferencer = MCIInference()
+    inferencer = IDHInference()
     metrics = inferencer.infer()

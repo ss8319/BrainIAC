@@ -1,60 +1,53 @@
 # IDH Mutation Classification
 
 <p align="left">
-  <img src="../../pictures/idh.jpeg" width="200" alt="IDH Mutation Classification Example"/>
+  <img src="idh.jpeg" width="200" alt="IDH Mutation Classification Example"/>
 </p>
 
 ## Overview
 
-This module performs binary classification of IDH mutation status using T1CE and FLAIR MRI scans. The model has been trained on [dataset details] and achieves [performance metrics].
+We present the IDH mutation classification training and inference code for BrainIAC as a downstream task. The pipeline is trained and infered on T1CE and FLAIR scans, with AUC and F1 as evaluation metric.
 
 ## Data Requirements
 
-- **Input**: T1CE and FLAIR MRI scans
+- **Input**: T1CE and FLAIR MR sequences from a single scan
 - **Format**: NIFTI (.nii.gz)
 - **Preprocessing**: Bias field corrected, registered to standard space, skull stripped
 - **CSV Structure**:
   ```
   pat_id,scandate,label
-  subject001,20240101,1    # 1 for IDH mutant, 0 for wildtype
+  subject001,scan_sequence,1    # 1 for IDH mutant, 0 for wildtype
   ```
+refer to [ quickstart.ipynb](../quickstart.ipynb) to find how to preprocess data and generate csv file.
 
-## Usage
-
-### Using Docker
-
-```bash
-docker pull brainiac/idh:latest
-docker run -v /path/to/data:/data brainiac/idh:latest [args]
-```
-
-### Manual Setup
+## Setup
 
 1. **Configuration**:
+change the [config.yml](../config.yml) file accordingly.
    ```yaml
    # config.yml
    data:
      train_csv: "path/to/train.csv"
      val_csv: "path/to/val.csv"
      test_csv: "path/to/test.csv"
-     root_dir: "path/to/preprocessed/scans"
-     collate: 2  # dual scan framework
+     root_dir: "../data/sample/processed"
+     collate: 2  # two sequence pipeline  
+    
+   checkpoints: "./checkpoints/idh_model.00"     # for inference/testing 
+   
+   train:
+    finetune: 'yes'      # yes to finetune the entire model 
+    freeze: 'no'         # yes to freeze the resnet backbone 
+    weights: ./checkpoints/brainiac.ckpt  # path to brainiac weights
    ```
 
 2. **Training**:
    ```bash
-   python train_idh.py
+   python -m IDHprediction.train_idh
    ```
 
 3. **Inference**:
    ```bash
-   python infer_idh.py
+   python -m IDHprediction.infer_idh
    ```
 
-## Model Architecture
-
-[Details about the model architecture, training strategy, etc.]
-
-## Performance
-
-[Performance metrics, validation results, etc.] 

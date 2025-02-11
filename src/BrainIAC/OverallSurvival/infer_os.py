@@ -29,11 +29,10 @@ class OSDataset(MedicalImageDatasetBalancedIntensity3D):
         scan_list = []
         
         # Load T1CE, FLAIR, T1 and T2 modalities
-        modalities = ["T1", "T2", "T1GD", "FLAIR"]
-        data_dir = os.path.join(self.root_dir, "UPENN-GBM", "data")
+        modalities = ["t1n", "t2n", "t1c", "t2f"]
 
         for modality in modalities:
-            img_name = os.path.join(data_dir, pat_id, f"{pat_id}_{modality}.nii.gz")
+            img_name = os.path.join(self.root_dir, f"{pat_id}_{modality}.nii.gz")
             scan = nib.load(img_name).get_fdata()
             scan_list.append(torch.tensor(scan, dtype=torch.float32).unsqueeze(0))
 
@@ -169,7 +168,7 @@ class OSInference(BaseConfig):
         _ = plot_km_curve(merged_results)
         
         # Save results
-        infer_on_test.to_csv('mci_classification_predictions.csv', index=False)
+        infer_on_test.to_csv('./data/output/mci_classification_predictions.csv', index=False)
 
 
 

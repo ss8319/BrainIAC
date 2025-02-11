@@ -1,60 +1,53 @@
 # Overall Survival Prediction
 
 <p align="left">
-  <img src="../../pictures/os.jpeg" width="200" alt="Overall Survival Prediction Example"/>
+  <img src="os.jpeg" width="200" alt="Overall Survival Prediction Example"/>
 </p>
 
 ## Overview
 
-This module predicts overall survival for GBM patients using multiple MRI sequences (T1CE, T1w, T2w, and FLAIR). The model has been trained on [dataset details] and achieves [performance metrics].
+We present the overall survival prediction training and inference code for BrainIAC as a downstream task. The pipeline is trained and infered on multiple MRI sequences (T1CE, T1w, T2w, and FLAIR), with MAE as evaluation metric.
 
 ## Data Requirements
 
-- **Input**: T1CE, T1w, T2w, and FLAIR MRI scans
+- **Input**: T1CE, T1w, T2w, and FLAIR MR sequences from a single scan
 - **Format**: NIFTI (.nii.gz)
 - **Preprocessing**: Bias field corrected, registered to standard space, skull stripped
 - **CSV Structure**:
   ```
   pat_id,scandate,label
-  subject001,20240101,365    # survival time in days
+  subject001,imaging_sequence,1    # 1 year overall survival 
   ```
+refer to [ quickstart.ipynb](../quickstart.ipynb) to find how to preprocess data and generate csv file.
 
-## Usage
-
-### Using Docker
-
-```bash
-docker pull brainiac/survival:latest
-docker run -v /path/to/data:/data brainiac/survival:latest [args]
-```
-
-### Manual Setup
+## Setup
 
 1. **Configuration**:
+change the [config.yml](../config.yml) file accordingly.
    ```yaml
    # config.yml
    data:
      train_csv: "path/to/train.csv"
      val_csv: "path/to/val.csv"
      test_csv: "path/to/test.csv"
-     root_dir: "path/to/preprocessed/scans"
-     collate: 4  # multi-sequence framework
+     root_dir: "../data/sample/processed"
+     collate: 4  # 4 sequence pipeline
+    
+   checkpoints: "./checkpoints/os_model.00"     # for inference/testing 
+   
+   train:
+    finetune: 'yes'      # yes to finetune the entire model 
+    freeze: 'no'         # yes to freeze the resnet backbone 
+    weights: ./checkpoints/brainiac.ckpt  # path to brainiac weights
    ```
 
 2. **Training**:
    ```bash
-   python train_os.py
+   python -m OverallSurvival.train_os
    ```
 
 3. **Inference**:
    ```bash
-   python infer_os.py
+   python -m OverallSurvival.infer_os
    ```
 
-## Model Architecture
-
-[Details about the model architecture, training strategy, etc.]
-
-## Performance
-
-[Performance metrics, validation results, etc.] 
