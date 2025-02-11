@@ -41,12 +41,12 @@ See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started of how to
 
 ## Train Downstream Models
 
-- [Brain Age Prediction](DownstreamTasks/Brainage/README.md)
-- [IDH Mutation Classification](DownstreamTasks/IDHprediction/README.md)
-- [MCI Classification](DownstreamTasks/MCIclassification/README.md)
-- [Overall Survival Prediction](DownstreamTasks/OverallSurvival/README.md)
-- [Sequence Classification](DownstreamTasks/SequenceClassification/README.md)
-- [Time to Stroke Prediction](DownstreamTasks/timetostroke/README.md)
+- [Brain Age Prediction](./src/BrainIAC/Brainage/README.md)
+- [IDH Mutation Classification](./src/BrainIAC/IDHprediction/README.md)
+- [MCI Classification](./src/BrainIAC/MCIclassification/README.md)
+- [Overall Survival Prediction](./src/BrainIAC/OverallSurvival/README.md)
+- [Sequence Classification](./src/BrainIAC/SequenceClassification/README.md)
+- [Time to Stroke Prediction](./src/BrainIAC/timetostroke/README.md)
 
 ## Citation
 
