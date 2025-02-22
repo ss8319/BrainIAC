@@ -166,9 +166,9 @@ class IDHInference(BaseConfig):
         
         # Save results
         results_df.to_csv('./data/output/idh_classification_predictions.csv', index=False)
-        
-        return metrics
+        print("PredictedLabel", results_df["PredictedLabel"][0])
+        return None
 
 if __name__ == "__main__":
     inferencer = IDHInference()
-    metrics = inferencer.infer()
+    _ = inferencer.infer()

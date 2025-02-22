@@ -113,6 +113,7 @@ class MCIInference(BaseConfig):
                     'PredictedLabel': preds,
                     'TrueLabel': labels.cpu().numpy().flatten()
                 })
+                
                 results_df = pd.concat([results_df, result], ignore_index=True)
         
         # log metrics 
@@ -131,6 +132,7 @@ class MCIInference(BaseConfig):
         print(f"AUC: {metrics['auc']:.4f}")"""
         
         # Save results
+        print("PredictedLabel", results_df["PredictedLabel"][0])
         results_df.to_csv('./data/output/mci_classification_predictions.csv', index=False)
         
         return None

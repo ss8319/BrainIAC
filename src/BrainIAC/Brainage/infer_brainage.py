@@ -75,7 +75,7 @@ class BrainAgeInference(BaseConfig):
                 results_df = pd.concat([results_df, result], ignore_index=True)
         
         mae = mean_absolute_error(all_labels, all_predictions)
-        print(f"Mean Absolute Error (MAE): {mae:.4f}")
+        print(f"Mean Absolute Error (MAE): {mae:.4f} months")
         results_df.to_csv('./data/output/brainage_output.csv', index=False)
         
         return mae

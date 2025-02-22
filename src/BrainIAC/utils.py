@@ -19,7 +19,7 @@ class BaseConfig:
         torch.manual_seed(seed)
         
         os.environ['CUDA_VISIBLE_DEVICES'] = self.config["gpu"]["visible_device"]
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device =  torch.device(self.config["gpu"]["device"]) #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
             torch.set_float32_matmul_precision("medium")

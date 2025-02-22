@@ -1,15 +1,16 @@
 data:
   batch_size: 16
-  collate: 1
+  collate: 2
   num_workers: 4
   root_dir: ./data/sample/processed
   test_csv: ./data/csvs/input_scans.csv
   train_csv: ./data/csvs/train_set_100.csv
   val_csv: ./data/csvs/val_set_100.csv
 gpu:
-  visible_device: '1'
+  device: cpu
+  visible_device: '0'
 infer:
-  checkpoints: ./checkpoints/stroke.03
+  checkpoints: ./checkpoints/idh_model.76
 logger:
   project_name: brainage
   run_name: ExperimentName_trainconfigs

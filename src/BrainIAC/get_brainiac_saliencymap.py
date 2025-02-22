@@ -17,12 +17,6 @@ random.seed(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(seed)
-
-
 # collate funcntion (unneccerary for single timpoint input)
 def custom_collate(batch):
     """Handles variable size of the scans and pads the sequence dimension."""
@@ -45,7 +39,7 @@ def custom_collate(batch):
     return {"image": torch.stack(padded_images, dim=0), "label": labels, "pat_id": patids}
 
 
-def generate_saliency_maps(model, data_loader, output_dir):
+def generate_saliency_maps(model, data_loader, output_dir, device):
     """Generate saliency maps using guided backprop method"""
     model.eval()
     visualizer = GuidedBackpropSmoothGrad(model=model.backbone, stdev_spread=0.15, n_samples=10, magnitude=True)
@@ -83,6 +77,7 @@ def main():
                       help='Root directory containing the image data')
     
     args = parser.parse_args()
+    device = torch.device("cpu")
     
     # Create output directory if it doesn't exist
     os.makedirs(args.output_dir, exist_ok=True)
@@ -100,12 +95,15 @@ def main():
         num_workers=1
     )
     
-    # Load brainiac
+    # Load brainiac and ensure it's on CPU
     model = load_brainiac(args.checkpoint, device)
     model = model.to(device)
     
+    # Make sure model weights are on CPU
+    model.backbone = model.backbone.to(device)
+    
     # Generate saliency maps
-    generate_saliency_maps(model, dataloader, args.output_dir)
+    generate_saliency_maps(model, dataloader, args.output_dir, device)
     
     print(f"Saliency maps generated and saved to {args.output_dir}")
 

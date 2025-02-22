@@ -137,10 +137,11 @@ class SequenceInference(BaseConfig):
         print(f"AUC: {metrics['auc']:.4f}")"""
         
         # Save results
+        print("PredictedLabel", preds)
         results_df.to_csv('./data/output/sequence_classification_predictions.csv', index=False)
         
-        return metrics
+        return None #metrics
 
 if __name__ == "__main__":
     inferencer = SequenceInference()
-    metrics = inferencer.infer()
+    _ = inferencer.infer()

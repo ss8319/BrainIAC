@@ -10,7 +10,7 @@ BrainIAC is a vision foundation model for generalized Brain MRI analysis, traine
 
 - MR Sequence Classification
 - Brain age prediction
-- IDH Mutation classification
+- IDH Mutation classification 
 - Overall survival for GBM subjects
 - Mild Cognitive impairment (MCI) classification
 - Time to stroke onset prediction
@@ -36,7 +36,7 @@ Download BrainIAC and downstream model checkpoints: [Model Checkpoints](https://
 
 ## Quick Start
 
-See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started of how to preprocess data, load BrainIAC to extract features, generate and visualize saliency maps. We provide a sample dataset from publicly available [UPENN-GBM](https://www.cancerimagingarchive.net/collection/upenn-gbm/), [License](https://creativecommons.org/licenses/by/4.0/) (with no modifications to the provided preprocessed images)in the [sample_data](src/BrainIAC/data/sample/processed/) directory and the corresponding csv file in [input_scans.csv](src/BrainIAC/data/csvs/input_scans.csv) to run BrainIAC and downstream tasks.
+See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started of how to preprocess data, load BrainIAC to extract features, generate and visualize saliency maps, and run inference on downstream tasks. We provide data samples from publicly available [UPENN-GBM](https://www.cancerimagingarchive.net/collection/upenn-gbm/) [License](https://creativecommons.org/licenses/by/4.0/) (with no modifications to the provided preprocessed images) and the [Pixar](https://openneuro.org/datasets/ds000228/versions/1.1.1)  [License](https://creativecommons.org/public-domain/cc0/) dataset in the [sample_data](src/BrainIAC/data/sample/processed/) directory. The corresponding csv files with ground truth labels are also made available in [csvs](src/BrainIAC/data/csvs) directory.
 
 
 ## Train Downstream Models
@@ -62,6 +62,6 @@ See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started of how to
 
 ## License
 
-BrainIAC is released under the MIT License. See [LICENSE](LICENSE) for details.
+BrainIAC is released under the CC BY-NC License. See [LICENSE](LICENSE) for details.
 
 
