@@ -75,7 +75,7 @@ class MCITrainer(BaseConfig):
         # Load weights from brainiac
         config = self.get_config()
         if config["train"]["finetune"] == "yes":
-            checkpoint = torch.load(config["train"]["weights"])
+            checkpoint = torch.load(config["train"]["weights"], map_location=self.device)
             state_dict = checkpoint["state_dict"]
             filtered_state_dict = {}
             for key, value in state_dict.items():

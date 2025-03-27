@@ -17,7 +17,7 @@ def load_brainiac(checkpoint_path, device='cuda'):
     model = ResNet50_3D()
     
     # Load brainiac weights 
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint["state_dict"]
     filtered_state_dict = {key: value for key, value in state_dict.items() if 'backbone' in key}
     model.load_state_dict(filtered_state_dict)
