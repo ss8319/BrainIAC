@@ -56,6 +56,22 @@ See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started on how to
 - [Tumor Segmentation](./docs/downstream_tasks/tumor_segmentation.md)
 
 
+## Interactive Demos
+
+Test BrainIAC's downstream models on your own data with our interactive demos, hosted on hugging face spaces!
+
+### Available Demos
+
+- [**Brain Age Prediction**](https://huggingface.co/spaces/Divytak/BrainIAC-Brainage-V0): Predict the biological age of a brain from structural MRI scans
+  - Upload your preprocessed T1w MRI scan and get an estimated brain age
+
+- [**Mild Cognitive Impairment (MCI) Classification**](https://huggingface.co/spaces/Divytak/BrainIAC-MildCognitiveImpairment_Classification): Classify cognitive impairment status
+  - Analyze brain MRI to detect signs of mild cognitive impairment
+
+
+More interactive demos coming soon for other downstream tasks!
+
+
 ## Citation
 
 ```bibtex
