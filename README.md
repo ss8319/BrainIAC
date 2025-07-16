@@ -70,7 +70,7 @@ interactive demos coming soon for other downstream tasks!
 
 ## Docker
 
-For easy deployment and reproducibility, you can run BrainIAC using Docker:
+For local deployment, run BrainIAC downstream model application using Docker:
 
 ***MCI app***
 ```bash
