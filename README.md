@@ -56,7 +56,7 @@ See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started on how to
 - [Tumor Segmentation](./docs/downstream_tasks/tumor_segmentation.md)
 
 
-## Interactive Demos
+## Application Demos
 
 Test BrainIAC's downstream models on your own data with our interactive demos, hosted on hugging face spaces!
 
