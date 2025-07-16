@@ -87,8 +87,6 @@ python src/train_lightning_segmentation.py
 
 ## Inference
 
-### Evaluation on Test Set
-
 ### Run Evaluation
 ```bash
 """
@@ -112,7 +110,6 @@ python src/test_segmentation.py \
 
 ### Generate Segmentation for Single Image
 
-### Run Single Image Segmentation
 ```bash
 """
 Command Line Arguments:
