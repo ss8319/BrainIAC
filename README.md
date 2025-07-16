@@ -62,14 +62,13 @@ Test BrainIAC's downstream models on your own data with our interactive demos, h
 
 ### Available Demos
 
-- [**Brain Age Prediction**](https://huggingface.co/spaces/Divytak/BrainIAC-Brainage-V0): Predict the biological age of a brain from structural MRI scans
-  - Upload your preprocessed T1w MRI scan and get an estimated brain age
+- [**Brain Age Prediction**](https://huggingface.co/spaces/Divytak/BrainIAC-Brainage-V0): Brain age prediction from structural T1 MRI scans
+  - Upload T1w MRI scan to get the brain age
 
-- [**Mild Cognitive Impairment (MCI) Classification**](https://huggingface.co/spaces/Divytak/BrainIAC-MildCognitiveImpairment_Classification): Classify cognitive impairment status
-  - Analyze brain MRI to detect signs of mild cognitive impairment
+- [**Mild Cognitive Impairment (MCI) Classification**](https://huggingface.co/spaces/Divytak/BrainIAC-MildCognitiveImpairment_Classification): Mild cognitive impairment risk prediction from structural T1 MRI scans
+  - Upload T1w MRI scan to get the MCI risk score
 
-
-More interactive demos coming soon for other downstream tasks!
+interactive demos coming soon for other downstream tasks!
 
 
 ## Citation
