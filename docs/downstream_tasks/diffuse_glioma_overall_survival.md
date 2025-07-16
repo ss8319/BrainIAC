@@ -30,9 +30,6 @@ subject003,1
 subject004,0
 ```
 
-**Column Descriptions:**
-- `pat_id`: Patient identifier (string)
-- `survival`: Survival outcome (0: short survival, 1: long survival; 15 months)
 
 ### Directory Structure
 Format the data structure as mentioned below
