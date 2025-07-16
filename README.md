@@ -60,8 +60,6 @@ See [quickstart.ipynb](./src/BrainIAC/quickstart.ipynb) to get started on how to
 
 Test BrainIAC's downstream models on your own data with our interactive demos, hosted on hugging face spaces!
 
-### Available Demos
-
 - [**Brain Age Prediction**](https://huggingface.co/spaces/Divytak/BrainIAC-Brainage-V0): Brain age prediction from structural T1 MRI scans
   - Upload T1w MRI scan to get the brain age
 
