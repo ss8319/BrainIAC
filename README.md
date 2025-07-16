@@ -68,6 +68,16 @@ Test BrainIAC's downstream models on your own data with our interactive demos, h
 
 interactive demos coming soon for other downstream tasks!
 
+## Docker
+
+For easy deployment and reproducibility, you can run BrainIAC using Docker:
+
+***MCI app***
+```bash
+docker run -p 7860:7860 divyanshutak1/brainiac-mci:latest
+```
+
+
 
 ## Citation
 
