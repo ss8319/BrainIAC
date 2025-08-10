@@ -72,6 +72,11 @@ interactive demos coming soon for other downstream tasks!
 
 For local deployment, run BrainIAC downstream model application using Docker:
 
+***IDH app***
+```bash
+docker run -p 7860:7860 --name brainiac-idh-app divyanshutak1/brainiac-idh:latest
+```
+
 ***MCI app***
 ```bash
 docker run -p 7860:7860 divyanshutak1/brainiac-mci:latest
