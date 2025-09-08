@@ -1,0 +1,31 @@
+# SLURM job output files
+src/preprocessing/preprocess_*.err
+src/preprocessing/preprocess_*.out
+
+# Checkpoints and model files
+src/checkpoints/
+*.ckpt
+*.pth
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Data files (large files)
+src/data/sample/processed/*.nii.gz
+*.nii.gz
+
+src/inference/saliency_maps/*.nii.gz
+src/inference/features/*.csv
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Log files
+*.log
+
+# Temporary files
+temp_*
+tmp_*
