@@ -26,6 +26,10 @@ src/inference/features/*.csv
 # Log files
 *.log
 
+#Files
+src/logs/
+src/wandb/
+
 # Temporary files
 temp_*
 tmp_*
