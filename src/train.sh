@@ -1,12 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=preprocess_adni
-#SBATCH --output=preprocess_%j.out
-#SBATCH --error=preprocess_%j.err
+#SBATCH --job-name=train_brainiac_debug
+#SBATCH --output=logs/train_%j.out
+#SBATCH --error=logs/train_%j.err
 #SBATCH --time=13:00:00
 #SBATCH --mem=39G
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
+
+export WANDB_API_KEY=2bd9da9f8c9031d1a7bdddb45f3bdf84f3139346
 
 # Initialize conda
 eval "$(/home/ssim0068/miniconda3/bin/conda shell.bash hook)"
@@ -26,17 +28,9 @@ echo "Successfully activated conda environment: $CONDA_DEFAULT_ENV"
 # Use the full path to python in the brainiac environment
 BRAINIAC_PYTHON="/home/ssim0068/miniconda3/envs/brainiac/bin/python"
 
-# Verify SimpleITK is available
-$BRAINIAC_PYTHON -c "import SimpleITK; print('SimpleITK version:', SimpleITK.Version())" || {
-    echo "ERROR: SimpleITK not available in brainiac environment"
-    echo "Trying to check what's available..."
-    $BRAINIAC_PYTHON -c "import sys; print('Python path:', sys.executable)"
-    $BRAINIAC_PYTHON -c "import pkg_resources; print('Installed packages:'); [print(p.project_name, p.version) for p in pkg_resources.working_set if 'simple' in p.project_name.lower()]"
-    exit 1
-}
 
 # Navigate to script directory
-cd /home/ssim0068/code/multimodal-AD/BrainIAC/src/preprocessing
+cd /home/ssim0068/code/multimodal-AD/BrainIAC/src/
 
 # Test GPU availability before running preprocessing
 echo "=== GPU Test Before Preprocessing ==="
@@ -54,7 +48,5 @@ else:
 
 # Run the script directly using the brainiac python
 echo "=== Starting Preprocessing ==="
-$BRAINIAC_PYTHON mri_preprocess_adni.py \
---temp_img /home/ssim0068/code/multimodal-AD/BrainIAC/src/preprocessing/atlases/mni305_lin_nifti/average305_t1_tal_lin.nii \
---input_dir /home/ssim0068/data/ADNI/nifti \
---output_dir /home/ssim0068/data/ADNI/preprocessed_adult
+$BRAINIAC_PYTHON train_lightning_mci.py \
+--config config_adni_cn_ad.yml
