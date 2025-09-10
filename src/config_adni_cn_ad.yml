@@ -1,0 +1,37 @@
+model:
+  max_epochs: 50
+
+data:
+  size: [96,96,96]  # Match BrainIAC pretrained model size
+  batch_size: 16      # Adjust based on your GPU memory
+  num_workers: 4
+  csv_file: "/home/ssim0068/data/ADNI/preprocessed_brainiac/csvs/mci_train.csv"
+  val_csv: "/home/ssim0068/data/ADNI/preprocessed_brainiac/csvs/mci_val.csv"
+  root_dir: "/home/ssim0068/data/ADNI/preprocessed_brainiac/images"
+
+simclrvit:
+  ckpt_path: "/home/ssim0068/code/multimodal-AD/BrainIAC/src/checkpoints/BrainIAC.ckpt"  # Update this path
+
+optim:
+  lr: 0.001           # Start with higher LR for linear probe
+  momentum: 0.9
+  weight_decay: 0.0001
+  clr: "no"
+
+logger:
+  save_dir: "/home/ssim0068/code/multimodal-AD/BrainIAC/logs/adni_debug"
+  save_name: "adni_cn_ad_linear_probe-{epoch:02d}-{val_auc:.2f}"
+  run_name_mci: "adni_cn_ad_linear_probe"
+  project_name_mci: "adni_cn_ad_classification"
+
+gpu:
+  visible_device: "0"
+
+
+trainer:
+  strategy: "ddp_find_unused_parameters_true"
+  precision: "16-mixed"
+
+train:
+  freeze: "yes"       # FROZEN backbone for linear probe
+  finetune: "no"      # No fine-tuning
