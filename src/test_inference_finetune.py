@@ -24,7 +24,7 @@ from dataset import (BrainAgeDataset, MCIStrokeDataset, SequenceDataset, DualIma
 # =============================================================================
 
 # Model paths
-SIMCLR_CKPT_PATH = "/media/data/divyanshu/foundation_model/Brainiac_revision/checkpoints/simclr_vitb_checkpoints/brainiac_trainval32k_simclr_normandscaling_vitb_cls_normonly_biasbeforenorm_lr0005_best-model-epoch=18-train_loss=0.00.ckpt"
+SIMCLR_CKPT_PATH = "/home/ssim0068/code/multimodal-AD/BrainIAC/src/checkpoints/BrainIAC.ckpt"
 
 # Dataset configurations - Add your datasets here
 DATASETS = {
@@ -47,10 +47,10 @@ DATASETS = {
         "num_classes": 1
     },
     "mci_task": {
-        "checkpoint_path": "/media/data/divyanshu/foundation_model/Brainiac_revision/checkpoints/simclrvitfinetune_checkpoints/100percent_mci_tejas_cls_simclrvitcls_0005_best-model-epoch=09-val_auc=0.78.ckpt",
-        "test_csv_path": "/media/data/divyanshu/foundation_model/Brainiac_revision/mae_finetuning/mci_oasis1_csvs/test.csv",
-        "root_dir": "/media/data/divyanshu/foundation_model/brainiac_data",
-        "output_csv_path": "/media/data/divyanshu/foundation_model/Brainiac_revision/simclrvit_finetuning/perturbation_mci/dummy_100_mcitestverificationresults.csv",
+        "checkpoint_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/logs/adni_debug/adni_cn_ad_full_ft_linear_probe-epoch=04-val_auc=0.71.ckpt",
+        "test_csv_path": "/home/ssim0068/data/ADNI_v2/csvs/mci_test.csv",
+        "root_dir": "/home/ssim0068/data/ADNI_v2/images_mni305" , 
+        "output_csv_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/src/logs/full_ft_test_predictions.csv",
         "task_type": "classification",
         "image_type": "single",
         "num_classes": 1
@@ -86,7 +86,7 @@ DATASETS = {
 
 # Select which datasets to run inference on (use dataset keys from above)
 DATASETS_TO_RUN = [
-   "brainage_task"
+   "mci_task"
 ]
 
 # Data configuration
