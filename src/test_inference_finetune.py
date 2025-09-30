@@ -47,10 +47,10 @@ DATASETS = {
         "num_classes": 1
     },
     "mci_task": {
-        "checkpoint_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/logs/adni_debug/adni_cn_ad_full_ft_linear_probe-epoch=04-val_auc=0.71.ckpt",
+        "checkpoint_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/logs/adni_debug/adni_cn_ad_linear_probe_icbm152-epoch=16-val_auc=0.72.ckpt",
         "test_csv_path": "/home/ssim0068/data/ADNI_v2/csvs/mci_test.csv",
-        "root_dir": "/home/ssim0068/data/ADNI_v2/images_mni305" , 
-        "output_csv_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/src/logs/full_ft_test_predictions.csv",
+        "root_dir": "/home/ssim0068/data/ADNI_v2/images_icbm152" , 
+        "output_csv_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/src/logs/icbm152_test_predictions.csv",
         "task_type": "classification",
         "image_type": "single",
         "num_classes": 1
