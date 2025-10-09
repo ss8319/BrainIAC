@@ -1,6 +1,7 @@
 import os
 import torch
 import pandas as pd
+import numpy as np
 from torch.utils.data import Dataset
 from monai.transforms import (
     Compose, LoadImaged, EnsureChannelFirstd, Resized, ScaleIntensityd,
@@ -8,8 +9,12 @@ from monai.transforms import (
     RandAffined, RandFlipd, RandGaussianNoised, RandGaussianSmoothd,
     RandAdjustContrastd, ToTensord
 )
+from monai.utils import set_determinism
 
 def get_default_transform(image_size=(96,96,96)):
+    # Fix for Python 3.13 compatibility - set determinism for all MONAI operations
+    set_determinism(seed=42)
+    
     return Compose([
         LoadImaged(keys=["image"]),
         EnsureChannelFirstd(keys=["image"]),
@@ -35,6 +40,9 @@ def get_default_transform(image_size=(96,96,96)):
     ])
 
 def get_validation_transform(image_size=(96,96,96)):
+    # We already set determinism in get_default_transform, but set it again just to be safe
+    set_determinism(seed=42)
+    
     return Compose([
         LoadImaged(keys=["image"]),
         EnsureChannelFirstd(keys=["image"]),
