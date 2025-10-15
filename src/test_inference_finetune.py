@@ -47,14 +47,23 @@ DATASETS = {
         "num_classes": 1
     },
     "mci_task": {
-        "checkpoint_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/logs/adni_debug/adni_cn_ad_linear_probe_icbm152-epoch=16-val_auc=0.72.ckpt",
-        "test_csv_path": "/home/ssim0068/data/ADNI_v2/csvs/mci_test.csv",
-        "root_dir": "/home/ssim0068/data/ADNI_v2/images_icbm152" , 
-        "output_csv_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/src/logs/icbm152_test_predictions.csv",
+        "checkpoint_path": "/home/ssim0068/multimodal-AD/src/mri/BrainIAC/src/logs/mni305/cn_ad_linear_probe_mni305_batch32-epoch=84-val_auc=0.77.ckpt",
+        "test_csv_path": "/home/ssim0068/data/ADNI_v2/csvs/ad_test.csv",
+        "root_dir": "/home/ssim0068/data/ADNI_v2/images_mni305" , 
+        "output_csv_path": "/home/ssim0068/multimodal-AD/src/mri/BrainIAC/src/logs/mni305_test_set/test_predictions.csv",
         "task_type": "classification",
         "image_type": "single",
         "num_classes": 1
     },
+    # "mci_task": { #icbm
+    #     "checkpoint_path": "multimodal-AD/src/mri/BrainIAC/src/logs/mni305/cn_ad_linear_probe_mni305_batch32-epoch=84-val_auc=0.77.ckpt",
+    #     "test_csv_path": "/home/ssim0068/data/ADNI_v2/csvs/mci_test.csv",
+    #     "root_dir": "/home/ssim0068/data/ADNI_v2/images_icbm152" , 
+    #     "output_csv_path": "/home/ssim0068/code/multimodal-AD/BrainIAC/src/logs/icbm152_test_predictions.csv",
+    #     "task_type": "classification",
+    #     "image_type": "single",
+    #     "num_classes": 1
+    # },
     "sequence_task": {
         "checkpoint_path": "/media/data/divyanshu/foundation_model/Brainiac_revision/simclrvit_finetuning/frozen_downstream_checkpoints/100percent_seq_tejas_cls_swinvit_0008_best-model-epoch=76-val_auc=0.95.ckpt",
         "test_csv_path": "/media/data/divyanshu/foundation_model/brainiac_data/BRATS23_dataset/csv/testing_dataset_info.csv",

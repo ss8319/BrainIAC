@@ -9,9 +9,6 @@
 #SBATCH --cpus-per-task=4
 
 
-# Initialize uv
-eval "$(uv run --help > /dev/null 2>&1 && echo 'uv available' || echo 'uv not found')"
-
 # Check if uv is available
 if ! command -v uv &> /dev/null; then
     echo "ERROR: uv not found. Please install uv first."
@@ -25,7 +22,7 @@ UV_PYTHON="uv run python"
 
 
 # Navigate to script directory
-cd /home/ssim0068/code/multimodal-AD/BrainIAC/src/
+cd /home/ssim0068/multimodal-AD/src/mri/BrainIAC/src/
 
 # Test GPU availability before running preprocessing
 echo "=== GPU Test Before Preprocessing ==="
