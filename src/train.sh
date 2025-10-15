@@ -8,33 +8,21 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 
-export WANDB_API_KEY=2bd9da9f8c9031d1a7bdddb45f3bdf84f3139346
+export WANDB_API_KEY=xxx
 
-# Initialize conda
-eval "$(/home/ssim0068/miniconda3/bin/conda shell.bash hook)"
+# Navigate to project directory
+cd /home/ssim0068/multimodal-AD
 
-# Activate conda environment
-conda activate brainiac
-
-# Check if conda environment was activated successfully
-if [[ "$CONDA_DEFAULT_ENV" != "brainiac" ]]; then
-    echo "ERROR: Failed to activate conda environment 'brainiac'"
-    echo "Current environment: $CONDA_DEFAULT_ENV"
-    exit 1
-fi
-
-echo "Successfully activated conda environment: $CONDA_DEFAULT_ENV"
-
-# Use the full path to python in the brainiac environment
-BRAINIAC_PYTHON="/home/ssim0068/miniconda3/envs/brainiac/bin/python"
+# Use uv to run Python in the project environment
+UV_PYTHON="uv run python"
 
 
 # Navigate to script directory
-cd /home/ssim0068/code/multimodal-AD/BrainIAC/src/
+cd /home/ssim0068/multimodal-AD/src/mri/BrainIAC/src/
 
 # Test GPU availability before running preprocessing
 echo "=== GPU Test Before Preprocessing ==="
-$BRAINIAC_PYTHON -c "
+$UV_PYTHON -c "
 import torch
 print(f'CUDA available: {torch.cuda.is_available()}')
 if torch.cuda.is_available():
@@ -46,7 +34,7 @@ else:
     print('CUDA not available - will use CPU')
 "
 
-# Run the script directly using the brainiac python
+# Run the script using uv
 echo "=== Starting Preprocessing ==="
-$BRAINIAC_PYTHON train_lightning_mci.py \
---config config_adni_cn_ad.yml
+$UV_PYTHON train_lightning_mci.py \
+--config config_adni_cn_ad_run1.yml

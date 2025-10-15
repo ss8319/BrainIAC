@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_brainiac_debug
-#SBATCH --output=logs/train_%j.out
-#SBATCH --error=logs/train_%j.err
+#SBATCH --job-name=test_inference
+#SBATCH --output=logs/test_inference_%j.out
+#SBATCH --error=logs/test_inference_%j.err
 #SBATCH --time=13:00:00
 #SBATCH --mem=39G
 #SBATCH --partition=gpu
@@ -9,23 +9,19 @@
 #SBATCH --cpus-per-task=4
 
 
-# Initialize conda
-eval "$(/home/ssim0068/miniconda3/bin/conda shell.bash hook)"
+# Initialize uv
+eval "$(uv run --help > /dev/null 2>&1 && echo 'uv available' || echo 'uv not found')"
 
-# Activate conda environment
-conda activate brainiac
-
-# Check if conda environment was activated successfully
-if [[ "$CONDA_DEFAULT_ENV" != "brainiac" ]]; then
-    echo "ERROR: Failed to activate conda environment 'brainiac'"
-    echo "Current environment: $CONDA_DEFAULT_ENV"
+# Check if uv is available
+if ! command -v uv &> /dev/null; then
+    echo "ERROR: uv not found. Please install uv first."
     exit 1
 fi
 
-echo "Successfully activated conda environment: $CONDA_DEFAULT_ENV"
+echo "Successfully found uv environment manager"
 
-# Use the full path to python in the brainiac environment
-BRAINIAC_PYTHON="/home/ssim0068/miniconda3/envs/brainiac/bin/python"
+# Use uv to run python commands
+UV_PYTHON="uv run python"
 
 
 # Navigate to script directory
@@ -33,7 +29,7 @@ cd /home/ssim0068/code/multimodal-AD/BrainIAC/src/
 
 # Test GPU availability before running preprocessing
 echo "=== GPU Test Before Preprocessing ==="
-$BRAINIAC_PYTHON -c "
+$UV_PYTHON -c "
 import torch
 print(f'CUDA available: {torch.cuda.is_available()}')
 if torch.cuda.is_available():
@@ -45,7 +41,7 @@ else:
     print('CUDA not available - will use CPU')
 "
 
-# Run the script directly using the brainiac python
+# Run the script directly using uv
 echo "=== Starting Preprocessing ==="
-$BRAINIAC_PYTHON test_inference_finetune.py \
+$UV_PYTHON test_inference_finetune.py \
 
