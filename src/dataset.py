@@ -54,7 +54,7 @@ def get_validation_transform(image_size=(96,96,96)):
 
 class BrainAgeDataset(Dataset):
     def __init__(self, csv_path, root_dir, transform=None):
-        self.dataframe = pd.read_csv(csv_path, dtype={"pat_id": str, "dataset": str})
+        self.dataframe = pd.read_csv(csv_path)
         self.root_dir = root_dir
         self.transform = transform if transform is not None else get_default_transform()
 
@@ -62,12 +62,28 @@ class BrainAgeDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        pat_id = str(self.dataframe.loc[idx, 'pat_id'])
-        label = self.dataframe.loc[idx, 'label']  # Regression value for stroke/MCI
-        #dataset = str(self.dataframe.loc[idx, 'dataset'])
+        # Use mri_path if available, otherwise construct from Subject/pat_id
+        if 'mri_path' in self.dataframe.columns:
+            img_path = str(self.dataframe.loc[idx, 'mri_path'])
+        elif 'Subject' in self.dataframe.columns:
+            # Fallback: use Subject column to construct path
+            subject_id = str(self.dataframe.loc[idx, 'Subject'])
+            img_path = os.path.join(self.root_dir, subject_id + ".nii.gz")
+        else:
+            # Original behavior: use pat_id
+            pat_id = str(self.dataframe.loc[idx, 'pat_id'])
+            img_path = os.path.join(self.root_dir, pat_id + ".nii.gz")
         
-        # Construct image path for MCI/Stroke format
-        img_path = os.path.join(self.root_dir,  pat_id  + ".nii.gz")
+        # Get label - check for different possible label column names
+        if 'label' in self.dataframe.columns:
+            label = self.dataframe.loc[idx, 'label']
+        elif 'Group' in self.dataframe.columns:
+            # Convert Group (AD/CN) to numeric label if needed
+            group = str(self.dataframe.loc[idx, 'Group'])
+            label = 1.0 if group == 'AD' else 0.0  # AD=1, CN=0
+        else:
+            label = 0.0  # Default label if none found
+        
         sample = {"image": img_path}
         sample = self.transform(sample)
         return {"image": sample["image"], "label": torch.tensor(label, dtype=torch.float32)}

@@ -34,19 +34,38 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
             self.attn_weights = None
 
         def forward(self, x):
-            # The original implementation of the attention module may not return
-            # the attention weights. This wrapper recalculates them to ensure they
-            # are captured. This is based on the standard ViT attention mechanism.
+            # MONAI ViT with save_attn=True stores attention matrices in att_mat
+            # First, run the forward pass to populate att_mat
             output = self.original_attn_module(x)
+            
+            # Try to get saved attention matrix from MONAI ViT
+            if hasattr(self.original_attn_module, 'att_mat'):
+                att_mat = self.original_attn_module.att_mat
+                if att_mat is not None:
+                    # att_mat shape: [batch, heads, seq_len, seq_len] or [heads, seq_len, seq_len]
+                    self.attn_weights = att_mat.detach() if isinstance(att_mat, torch.Tensor) else att_mat
+                    if len(self.attn_weights.shape) == 3:
+                        # Add batch dimension if missing: [heads, seq_len, seq_len] -> [1, heads, seq_len, seq_len]
+                        self.attn_weights = self.attn_weights.unsqueeze(0)
+                    return output
+            
+            # Fallback: recompute attention if att_mat not available
+            batch_size, seq_len, _ = x.shape
+            
+            # qkv is a nn.Module (Linear layer), not a callable function
             if hasattr(self.original_attn_module, 'qkv'):
-                qkv = self.original_attn_module.qkv(x)
-                batch_size, seq_len, _ = x.shape
-                # Assuming qkv has been fused and has shape (batch_size, seq_len, 3 * num_heads * head_dim)
-                qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
-                qkv = qkv.permute(2, 0, 3, 1, 4)
-                q, k, v = qkv[0], qkv[1], qkv[2]
-                attn = (q @ k.transpose(-2, -1)) * self.original_attn_module.scale
-                self.attn_weights = attn.softmax(dim=-1)
+                try:
+                    qkv = self.original_attn_module.qkv(x)  # qkv is a Linear layer, call it directly
+                    qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
+                    qkv = qkv.permute(2, 0, 3, 1, 4)
+                    q, k, v = qkv[0], qkv[1], qkv[2]
+                    scale = self.original_attn_module.scale if hasattr(self.original_attn_module, 'scale') else (q.shape[-1] ** -0.5)
+                    attn = (q @ k.transpose(-2, -1)) * scale
+                    self.attn_weights = attn.softmax(dim=-1)
+                except Exception as e:
+                    # If qkv computation fails, attn_weights remains None
+                    pass
+            
             return output
 
     # Replace the attention module in each block with our wrapper
@@ -115,6 +134,9 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
     # Extract the ViT backbone from the BrainIAC model
     vit_model = model.backbone
     
+    success_count = 0
+    error_count = 0
+    
     for sample in tqdm(data_loader, desc="Generating ViT attention maps"):
         inputs = sample['image'].to(device)
         labels = sample['label']
@@ -149,10 +171,14 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
                 # Save files
                 nib.save(input_nifti, os.path.join(output_dir, f"{filename_base}_image.nii.gz"))
                 nib.save(saliency_nifti, os.path.join(output_dir, f"{filename_base}_saliencymap_layer{layer_idx}.nii.gz"))
+                success_count += 1
                 
             except Exception as e:
                 print(f"Error processing sample {i}: {e}")
+                error_count += 1
                 continue
+    
+    print(f"\nSummary: {success_count} saliency maps generated successfully, {error_count} errors")
 
 def main():
     parser = argparse.ArgumentParser(description='Generate ViT attention-based saliency maps for medical images')
@@ -198,8 +224,6 @@ def main():
     
     # Generate saliency maps
     generate_saliency_maps(model, dataloader, args.output_dir, device, args.layer)
-    
-    print(f"ViT attention-based saliency maps generated and saved to {args.output_dir}")
 
 if __name__ == "__main__":
     main()
