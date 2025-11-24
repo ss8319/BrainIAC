@@ -62,27 +62,21 @@ class BrainAgeDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        # Use mri_path if available, otherwise construct from Subject/pat_id
-        if 'mri_path' in self.dataframe.columns:
-            img_path = str(self.dataframe.loc[idx, 'mri_path'])
-        elif 'Subject' in self.dataframe.columns:
-            # Fallback: use Subject column to construct path
-            subject_id = str(self.dataframe.loc[idx, 'Subject'])
-            img_path = os.path.join(self.root_dir, subject_id + ".nii.gz")
-        else:
-            # Original behavior: use pat_id
-            pat_id = str(self.dataframe.loc[idx, 'pat_id'])
-            img_path = os.path.join(self.root_dir, pat_id + ".nii.gz")
+        # Require mri_path column - fail explicitly if missing
+        if 'mri_path' not in self.dataframe.columns:
+            raise ValueError(
+                f"CSV file must contain 'mri_path' column. "
+                f"Found columns: {list(self.dataframe.columns)}"
+            )
+        img_path = str(self.dataframe.loc[idx, 'mri_path'])
         
-        # Get label - check for different possible label column names
-        if 'label' in self.dataframe.columns:
-            label = self.dataframe.loc[idx, 'label']
-        elif 'Group' in self.dataframe.columns:
-            # Convert Group (AD/CN) to numeric label if needed
-            group = str(self.dataframe.loc[idx, 'Group'])
-            label = 1.0 if group == 'AD' else 0.0  # AD=1, CN=0
-        else:
-            label = 0.0  # Default label if none found
+        # Require label column - fail explicitly if missing
+        if 'label' not in self.dataframe.columns:
+            raise ValueError(
+                f"CSV file must contain 'label' column. "
+                f"Found columns: {list(self.dataframe.columns)}"
+            )
+        label = self.dataframe.loc[idx, 'label']
         
         sample = {"image": img_path}
         sample = self.transform(sample)
