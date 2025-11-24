@@ -34,38 +34,19 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
             self.attn_weights = None
 
         def forward(self, x):
-            # MONAI ViT with save_attn=True stores attention matrices in att_mat
-            # First, run the forward pass to populate att_mat
+            # The original implementation of the attention module may not return
+            # the attention weights. This wrapper recalculates them to ensure they
+            # are captured. This is based on the standard ViT attention mechanism.
             output = self.original_attn_module(x)
-            
-            # Try to get saved attention matrix from MONAI ViT
-            if hasattr(self.original_attn_module, 'att_mat'):
-                att_mat = self.original_attn_module.att_mat
-                if att_mat is not None:
-                    # att_mat shape: [batch, heads, seq_len, seq_len] or [heads, seq_len, seq_len]
-                    self.attn_weights = att_mat.detach() if isinstance(att_mat, torch.Tensor) else att_mat
-                    if len(self.attn_weights.shape) == 3:
-                        # Add batch dimension if missing: [heads, seq_len, seq_len] -> [1, heads, seq_len, seq_len]
-                        self.attn_weights = self.attn_weights.unsqueeze(0)
-                    return output
-            
-            # Fallback: recompute attention if att_mat not available
-            batch_size, seq_len, _ = x.shape
-            
-            # qkv is a nn.Module (Linear layer), not a callable function
             if hasattr(self.original_attn_module, 'qkv'):
-                try:
-                    qkv = self.original_attn_module.qkv(x)  # qkv is a Linear layer, call it directly
-                    qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
-                    qkv = qkv.permute(2, 0, 3, 1, 4)
-                    q, k, v = qkv[0], qkv[1], qkv[2]
-                    scale = self.original_attn_module.scale if hasattr(self.original_attn_module, 'scale') else (q.shape[-1] ** -0.5)
-                    attn = (q @ k.transpose(-2, -1)) * scale
-                    self.attn_weights = attn.softmax(dim=-1)
-                except Exception as e:
-                    # If qkv computation fails, attn_weights remains None
-                    pass
-            
+                qkv = self.original_attn_module.qkv(x)
+                batch_size, seq_len, _ = x.shape
+                # Assuming qkv has been fused and has shape (batch_size, seq_len, 3 * num_heads * head_dim)
+                qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
+                qkv = qkv.permute(2, 0, 3, 1, 4)
+                q, k, v = qkv[0], qkv[1], qkv[2]
+                attn = (q @ k.transpose(-2, -1)) * self.original_attn_module.scale
+                self.attn_weights = attn.softmax(dim=-1)
             return output
 
     # Replace the attention module in each block with our wrapper
