@@ -24,6 +24,8 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
     weights during a forward pass. It then processes these weights to generate
     a 3D saliency map corresponding to the model's focus on the input image.
     """
+    # Ensure model is in eval mode
+    vit_model.eval()
     attention_maps = {}
 
     # A wrapper class to intercept and store attention weights from a ViT block.
@@ -34,23 +36,45 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
             self.attn_weights = None
 
         def forward(self, x):
-            # The original implementation of the attention module may not return
-            # the attention weights. This wrapper recalculates them to ensure they
-            # are captured. This is based on the standard ViT attention mechanism.
+            # Run the forward pass first
             output = self.original_attn_module(x)
+            
+            # Recompute attention weights from qkv to ensure consistency
+            batch_size, seq_len, _ = x.shape
+            
+            # qkv is a nn.Module (Linear layer), not a callable function
             if hasattr(self.original_attn_module, 'qkv'):
-                qkv = self.original_attn_module.qkv(x)
-                batch_size, seq_len, _ = x.shape
-                # Assuming qkv has been fused and has shape (batch_size, seq_len, 3 * num_heads * head_dim)
-                qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
-                qkv = qkv.permute(2, 0, 3, 1, 4)
-                q, k, v = qkv[0], qkv[1], qkv[2]
-                attn = (q @ k.transpose(-2, -1)) * self.original_attn_module.scale
-                self.attn_weights = attn.softmax(dim=-1)
+                try:
+                    qkv = self.original_attn_module.qkv(x)  # qkv is a Linear layer, call it directly
+                    qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
+                    qkv = qkv.permute(2, 0, 3, 1, 4)
+                    q, k, v = qkv[0], qkv[1], qkv[2]
+                    scale = self.original_attn_module.scale if hasattr(self.original_attn_module, 'scale') else (q.shape[-1] ** -0.5)
+                    attn = (q @ k.transpose(-2, -1)) * scale
+                    self.attn_weights = attn.softmax(dim=-1)
+                except Exception as e:
+                    # Log error for debugging but don't raise - let the outer function handle missing attention
+                    print(f"Warning: Failed to compute attention weights: {e}")
+                    raise
+            else:
+                print(f"Warning: Attention module does not have 'qkv' attribute. Available attributes: {[attr for attr in dir(self.original_attn_module) if not attr.startswith('_')]}")
+                raise AttributeError("Attention module does not have 'qkv' attribute.")
+            
             return output
 
     # Replace the attention module in each block with our wrapper
-    for i, block in enumerate(vit_model.blocks):
+    # Check if model has 'blocks' attribute (standard ViT) or 'vit_layers' (MONAI ViT)
+    if hasattr(vit_model, 'blocks'):
+        blocks = vit_model.blocks
+    elif hasattr(vit_model, 'vit_layers'):
+        blocks = vit_model.vit_layers
+    else:
+        # Debug: print model structure
+        print(f"Model type: {type(vit_model)}")
+        print(f"Model attributes: {dir(vit_model)}")
+        raise AttributeError(f"Model does not have 'blocks' or 'vit_layers' attribute. Available attributes: {[attr for attr in dir(vit_model) if not attr.startswith('_')]}")
+    
+    for i, block in enumerate(blocks):
         if hasattr(block, 'attn'):
             block.attn = AttentionWithWeights(block.attn)
 
@@ -59,8 +83,8 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
         _ = vit_model(image)
 
     # Collect the captured attention weights from each block
-    for i, block in enumerate(vit_model.blocks):
-        if hasattr(block.attn, 'attn_weights') and block.attn.attn_weights is not None:
+    for i, block in enumerate(blocks):
+        if hasattr(block, 'attn') and hasattr(block.attn, 'attn_weights') and block.attn.attn_weights is not None:
             attention_maps[f"layer_{i}"] = block.attn.attn_weights.detach()
 
     if not attention_maps:
