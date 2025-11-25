@@ -36,16 +36,23 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
             self.attn_weights = None
 
         def forward(self, x):
-            # Run the forward pass first
+            # MONAI ViT with save_attn=True stores attention matrices in att_mat
+            # We prioritize this as it's the native way MONAI exposes attention
             output = self.original_attn_module(x)
             
-            # Recompute attention weights from qkv to ensure consistency
+            # 1. Try to get saved attention matrix from MONAI ViT (most reliable)
+            if hasattr(self.original_attn_module, 'att_mat'):
+                att_mat = self.original_attn_module.att_mat
+                if att_mat is not None:
+                    # att_mat shape: [batch, heads, seq_len, seq_len]
+                    self.attn_weights = att_mat.detach()
+                    return output
+
+            # 2. Fallback: Try to recompute from qkv if available
             batch_size, seq_len, _ = x.shape
-            
-            # qkv is a nn.Module (Linear layer), not a callable function
             if hasattr(self.original_attn_module, 'qkv'):
                 try:
-                    qkv = self.original_attn_module.qkv(x)  # qkv is a Linear layer, call it directly
+                    qkv = self.original_attn_module.qkv(x)
                     qkv = qkv.reshape(batch_size, seq_len, 3, self.original_attn_module.num_heads, -1)
                     qkv = qkv.permute(2, 0, 3, 1, 4)
                     q, k, v = qkv[0], qkv[1], qkv[2]
@@ -53,12 +60,7 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
                     attn = (q @ k.transpose(-2, -1)) * scale
                     self.attn_weights = attn.softmax(dim=-1)
                 except Exception as e:
-                    # Log error for debugging but don't raise - let the outer function handle missing attention
-                    print(f"Warning: Failed to compute attention weights: {e}")
-                    raise
-            else:
-                print(f"Warning: Attention module does not have 'qkv' attribute. Available attributes: {[attr for attr in dir(self.original_attn_module) if not attr.startswith('_')]}")
-                raise AttributeError("Attention module does not have 'qkv' attribute.")
+                    print(f"Warning: Failed to compute from qkv: {e}")
             
             return output
 
@@ -74,8 +76,19 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
         print(f"Model attributes: {dir(vit_model)}")
         raise AttributeError(f"Model does not have 'blocks' or 'vit_layers' attribute. Available attributes: {[attr for attr in dir(vit_model) if not attr.startswith('_')]}")
     
+    # Store original attention modules to restore later
+    # This is CRITICAL to prevent recursive wrapping when processing multiple samples
+    original_attn_modules = {}
     for i, block in enumerate(blocks):
         if hasattr(block, 'attn'):
+            # Save original module
+            original_attn_modules[i] = block.attn
+            
+            # If the model was somehow not cleaned up, unwrap it first
+            if isinstance(block.attn, AttentionWithWeights):
+                block.attn = block.attn.original_attn_module
+                original_attn_modules[i] = block.attn
+                
             block.attn = AttentionWithWeights(block.attn)
 
     # Perform a forward pass to execute the wrapped modules and capture weights
@@ -86,6 +99,11 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
     for i, block in enumerate(blocks):
         if hasattr(block, 'attn') and hasattr(block.attn, 'attn_weights') and block.attn.attn_weights is not None:
             attention_maps[f"layer_{i}"] = block.attn.attn_weights.detach()
+            
+    # Restore original attention modules
+    # This cleans up the model for the next iteration
+    for i, original_module in original_attn_modules.items():
+        blocks[i].attn = original_module
 
     if not attention_maps:
         raise RuntimeError("Could not extract any attention maps. Please check the ViT model structure.")
@@ -98,6 +116,11 @@ def extract_attention_map(vit_model, image, layer_idx=-1, img_size=(96, 96, 96),
         raise ValueError(f"Layer {layer_idx} not found. Available layers: {list(attention_maps.keys())}")
 
     layer_attn = attention_maps[layer_name]
+
+    # Verify attention shape: should be (batch, heads, seq_len, seq_len) or (heads, seq_len, seq_len)
+    if len(layer_attn.shape) == 3:
+        layer_attn = layer_attn.unsqueeze(0) # Add batch dim if missing
+        
     # Average attention across all heads
     head_attn = layer_attn[0].mean(dim=0)
     # Get attention from the [CLS] token to all other image patches
@@ -141,6 +164,7 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
     
     success_count = 0
     error_count = 0
+    global_idx = 0
     
     for sample in tqdm(data_loader, desc="Generating ViT attention maps"):
         inputs = sample['image'].to(device)
@@ -170,8 +194,8 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
                 input_nifti = nib.Nifti1Image(inputs_np, np.eye(4))
                 saliency_nifti = nib.Nifti1Image(saliency_map, np.eye(4))
                 
-                # Create unique filename
-                filename_base = f"sample_{i:04d}_label_{label:.2f}"
+                # Create unique filename using global index
+                filename_base = f"sample_{global_idx:04d}_label_{label:.2f}"
                 
                 # Save files
                 nib.save(input_nifti, os.path.join(output_dir, f"{filename_base}_image.nii.gz"))
@@ -179,9 +203,10 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
                 success_count += 1
                 
             except Exception as e:
-                print(f"Error processing sample {i}: {e}")
+                print(f"Error processing sample {global_idx}: {e}")
                 error_count += 1
-                continue
+                
+            global_idx += 1
     
     print(f"\nSummary: {success_count} saliency maps generated successfully, {error_count} errors")
 
