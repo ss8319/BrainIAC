@@ -70,13 +70,24 @@ class BrainAgeDataset(Dataset):
             )
         img_path = str(self.dataframe.loc[idx, 'mri_path'])
         
-        # Require label column - fail explicitly if missing
-        if 'label' not in self.dataframe.columns:
+        # Require research_group column - fail explicitly if missing
+        if 'research_group' not in self.dataframe.columns:
             raise ValueError(
-                f"CSV file must contain 'label' column. "
+                f"CSV file must contain 'research_group' column. "
                 f"Found columns: {list(self.dataframe.columns)}"
             )
-        label = self.dataframe.loc[idx, 'label']
+        research_group = str(self.dataframe.loc[idx, 'research_group']).strip()
+        
+        # Convert research_group to numeric label: AD=1.0, CN=0.0
+        if research_group.upper() == 'AD':
+            label = 1.0
+        elif research_group.upper() == 'CN':
+            label = 0.0
+        else:
+            raise ValueError(
+                f"research_group must be 'AD' or 'CN', got '{research_group}'. "
+                f"Row {idx} has invalid value."
+            )
         
         sample = {"image": img_path}
         sample = self.transform(sample)
