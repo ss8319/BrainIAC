@@ -91,7 +91,7 @@ class BrainAgeDataset(Dataset):
         
         sample = {"image": img_path}
         sample = self.transform(sample)
-        return {"image": sample["image"], "label": torch.tensor(label, dtype=torch.float32)}
+        return {"image": sample["image"], "label": torch.tensor(label, dtype=torch.float32), "image_path": img_path}
 
 
 class MCIStrokeDataset(Dataset):

@@ -169,6 +169,7 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
     for sample in tqdm(data_loader, desc="Generating ViT attention maps"):
         inputs = sample['image'].to(device)
         labels = sample['label']
+        image_paths = sample.get('image_path', [])  # Get original image paths
         
         # Get patient ID from the file path if available
         # This is a simplified approach - you might need to modify based on your dataset structure
@@ -189,10 +190,30 @@ def generate_saliency_maps(model, data_loader, output_dir, device, layer_idx=-1)
                 )
                 
                 # Save input image and saliency map
-                inputs_np = input_tensor.squeeze().cpu().detach().numpy()
-                
-                input_nifti = nib.Nifti1Image(inputs_np, np.eye(4))
-                saliency_nifti = nib.Nifti1Image(saliency_map, np.eye(4))
+                # If we have the original image path, load and save the original image
+                # Otherwise fall back to the preprocessed tensor
+                if len(image_paths) > i:
+                    original_img_path = image_paths[i]
+                    input_nifti = nib.load(original_img_path)
+                    original_affine = input_nifti.affine
+                    original_shape = input_nifti.shape
+                    
+                    # Upsample saliency map to match original image resolution
+                    # Convert to tensor for interpolation: (D, H, W) -> (1, 1, D, H, W)
+                    saliency_tensor = torch.from_numpy(saliency_map).unsqueeze(0).unsqueeze(0).float()
+                    saliency_upsampled = torch.nn.functional.interpolate(
+                        saliency_tensor,
+                        size=original_shape,
+                        mode='trilinear',
+                        align_corners=False
+                    ).squeeze().numpy()
+                    
+                    # Use original affine for correct spatial alignment
+                    saliency_nifti = nib.Nifti1Image(saliency_upsampled, original_affine)
+                else:
+                    inputs_np = input_tensor.squeeze().cpu().detach().numpy()
+                    input_nifti = nib.Nifti1Image(inputs_np, np.eye(4))
+                    saliency_nifti = nib.Nifti1Image(saliency_map, np.eye(4))
                 
                 # Create unique filename using global index
                 filename_base = f"sample_{global_idx:04d}_label_{label:.2f}"
