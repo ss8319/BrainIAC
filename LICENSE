@@ -1,0 +1,34 @@
+NON-COMMERCIAL ACADEMIC RESEARCH USE ONLY LICENSE
+
+1. DEFINITIONS
+"Licensed Materials" means the BrainIAC model, checkpoints, and associated software
+provided in this repository.
+"Licensor" means Mass General Brigham.
+
+2. LICENSE GRANT
+Subject to the terms and conditions of this License, Licensor hereby grants you a
+non-exclusive, non-transferable, royalty-free license to use the Licensed Materials
+for non-commercial academic research purposes only.
+
+3. RESTRICTIONS
+3.1 Non-Commercial Use Only: You may NOT use the Licensed Materials for any
+commercial purpose, including but not limited to:
+a. Clinical applications or diagnostic use in a healthcare setting.
+b. Development of commercial products or services.
+c. Use in a for-profit entity or for the benefit of a for-profit entity.
+3.2 No Redistribution: You may not redistribute, sub-license, or sell the Licensed
+Materials.
+3.3 Attribution: Any publication resulting from the use of the Licensed Materials must
+cite the original BrainIAC paper: Tak, D., et al. "A generalizable foundation model
+for analysis of human brain MRI", Nature Neuroscience (2026).
+
+4. TERMINATION
+This license terminates automatically if you fail to comply with its terms.
+
+5. DISCLAIMER OF WARRANTY
+THE LICENSED MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+6. CONTACT
+For commercial licensing inquiries, please contact the Mass General Brigham Office
+of Technology Development.
+
