@@ -6,7 +6,7 @@
 
 ## Overview
 
-BrainIAC (Brain Imaging Adaptive Core) is vision based foundation model for generalized structural Brain MRI analysis. This repository provides the BrainIAC and downstream model checkpoints, with training/inference pipeline across all downstream tasks. Checkout the [Paper]([https://pmc.ncbi.nlm.nih.gov/articles/PMC11643205/](https://www.nature.com/articles/s41593-026-02202-6))
+BrainIAC (Brain Imaging Adaptive Core) is vision based foundation model for generalized structural Brain MRI analysis. This repository provides the BrainIAC and downstream model checkpoints, with training/inference pipeline across all downstream tasks. Checkout the [Paper](https://www.nature.com/articles/s41593-026-02202-6)
 
 
 ## Installation
@@ -85,5 +85,4 @@ Mass General Brigham.
 
 For commercial licensing inquiries, please contact the
 Mass General Brigham Office of Technology Development. See [LICENSE](LICENSE) for details.
-
 

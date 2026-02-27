@@ -8,7 +8,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 
-export WANDB_API_KEY=xxx
+export WANDB_API_KEY=2bd9da9f8c9031d1a7bdddb45f3bdf84f3139346
 
 # Navigate to project directory
 cd /home/ssim0068/multimodal-AD
