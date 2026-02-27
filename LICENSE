@@ -1,34 +1,33 @@
-NON-COMMERCIAL ACADEMIC RESEARCH USE ONLY LICENSE
+BrainIAC Research-Only License
 
-1. DEFINITIONS
-"Licensed Materials" means the BrainIAC model, checkpoints, and associated software
-provided in this repository.
-"Licensor" means Mass General Brigham.
+Copyright © 2026
+Mass General Brigham and contributors
 
-2. LICENSE GRANT
-Subject to the terms and conditions of this License, Licensor hereby grants you a
-non-exclusive, non-transferable, royalty-free license to use the Licensed Materials
-for non-commercial academic research purposes only.
+Permission is hereby granted to use, copy, modify, and distribute this
+software and associated documentation files (the “Software”) solely for
+non-commercial academic research and educational purposes.
 
-3. RESTRICTIONS
-3.1 Non-Commercial Use Only: You may NOT use the Licensed Materials for any
-commercial purpose, including but not limited to:
-a. Clinical applications or diagnostic use in a healthcare setting.
-b. Development of commercial products or services.
-c. Use in a for-profit entity or for the benefit of a for-profit entity.
-3.2 No Redistribution: You may not redistribute, sub-license, or sell the Licensed
-Materials.
-3.3 Attribution: Any publication resulting from the use of the Licensed Materials must
-cite the original BrainIAC paper: Tak, D., et al. "A generalizable foundation model
-for analysis of human brain MRI", Nature Neuroscience (2026).
+Commercial use of the Software is strictly prohibited without a separate
+written license from Mass General Brigham. Commercial use includes, but is
+not limited to:
+- Use in products, services, or platforms offered for a fee or other
+  commercial advantage;
+- Use in clinical workflows, decision support systems, or healthcare
+  operations;
+- Use by for-profit entities for internal or external commercial purposes;
+- Redistribution or deployment of the Software or derived works as part
+  of a commercial offering.
 
-4. TERMINATION
-This license terminates automatically if you fail to comply with its terms.
+The Software may not be sublicensed, sold, leased, or otherwise transferred
+for commercial purposes without prior written authorization from
+Mass General Brigham.
 
-5. DISCLAIMER OF WARRANTY
-THE LICENSED MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+The Software is provided “AS IS”, without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose, and non-infringement. In no event shall
+the authors or copyright holders be liable for any claim, damages, or other
+liability, whether in an action of contract, tort, or otherwise, arising
+from, out of, or in connection with the Software or the use or other
+dealings in the Software.
 
-6. CONTACT
-For commercial licensing inquiries, please contact the Mass General Brigham Office
-of Technology Development.
-
+All commercial rights are expressly reserved.

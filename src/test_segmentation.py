@@ -12,7 +12,7 @@ from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset
 import csv
 
-# Import from this directory's files
+# Import from segmentation model
 from dataset_segmentation import get_segmentation_dataloader
 from segmentation_model import ViTUNETRSegmentationModel
 
@@ -21,8 +21,7 @@ def load_model(config, checkpoint_path):
     Loads a ViTUNETRSegmentationModel and populates it with weights from a
     PyTorch Lightning checkpoint.
     """
-    # 1. Instantiate the model using parameters from the config file.
-    #    The model will automatically load the pretrained SimCLR encoder.
+   #load the model
     model = ViTUNETRSegmentationModel(
         simclr_ckpt_path=config['pretrain']['simclr_checkpoint_path'],
         img_size=tuple(config['model']['img_size']),
@@ -30,10 +29,10 @@ def load_model(config, checkpoint_path):
         out_channels=config['model']['out_channels']
     )
 
-    # 2. Load the state dict from the segmentation finetuning checkpoint.
+    # 2load the state_dic
     state_dict = torch.load(checkpoint_path)['state_dict']
     
-    # 3. Adjust keys to remove 'model.' prefix added by Lightning.
+    # remove model. for lightning compatibiltiy 
     new_state_dict = {}
     for k, v in state_dict.items():
         if k.startswith('model.'):
@@ -47,15 +46,15 @@ def get_test_dataloader(config, test_csv):
     """
     Creates a DataLoader for the test set.
     """
-    # This function from dataset_segmentation.py returns a MONAI CacheDataset
+   
     test_ds = get_segmentation_dataloader(
         csv_file=test_csv,
         img_size=tuple(config['model']['img_size']),
-        batch_size=1, # Not used by dataset, but required
-        num_workers=1, # Not used by dataset, but required
+        batch_size=1, 
+        num_workers=1,
         is_train=False
     )
-    # We wrap the dataset in a standard PyTorch DataLoader
+    # spinup dataloader
     return DataLoader(test_ds, batch_size=1, shuffle=False, num_workers=0, pin_memory=True)
 
 def evaluate(model, test_loader, config):
@@ -125,7 +124,7 @@ def evaluate(model, test_loader, config):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    # Use the local config file as the default
+   
     parser.add_argument('--config', type=str, required=False, default="config_finetune_segmentation.yml", help="Path to config YAML")
     parser.add_argument('--output_json', type=str, required=False, default="./inference/model_outputs/segmentation.json", help="Path to save combined metrics JSON")
     parser.add_argument('--test_csv', type=str, required=True, help="Path to test CSV file")
@@ -149,22 +148,22 @@ if __name__ == "__main__":
         print("No checkpoint path provided. Please specify --checkpoint_path")
         exit()
         
-    # Ensure the output directory exists
+    
     os.makedirs(os.path.dirname(args.output_json), exist_ok=True)
     os.makedirs(args.csv_output_dir, exist_ok=True)
 
     all_metrics = {}
     test_loader = get_test_dataloader(config, args.test_csv)
 
-    # Dictionary to store mean dice scores for final summary
+    # store results 
     mean_dice_scores = {}
 
     for experiment_name, ckpt_path in checkpoints_to_evaluate.items():
         if not os.path.exists(ckpt_path):
-            print(f"WARNING: Checkpoint not found for '{experiment_name}', skipping: {ckpt_path}")
+            print(f"Checkpoint not found for '{experiment_name}'")
             continue
 
-        print(f"--- Evaluating checkpoint for '{experiment_name}' ---")
+        print(f" Evaluating : '{experiment_name}' ")
         model = load_model(config, ckpt_path)
         metrics = evaluate(model, test_loader, config)
         
@@ -178,22 +177,22 @@ if __name__ == "__main__":
             writer.writerow(["dice"])
             for dice in metrics["per_case_dice"].values():
                 writer.writerow([dice])
-        print(f"Saved per-case Dice scores to: {csv_path}")
         
-        # Print mean Dice for this checkpoint
+        
+        # Print mean Dice 
         mean_dice = sum(metrics["per_case_dice"].values()) / len(metrics["per_case_dice"])
         mean_dice_scores[experiment_name] = mean_dice
         print(f"Mean Dice for '{experiment_name}': {mean_dice:.4f}")
 
-    # Print summary of all mean dice scores at the end
-    print("\n" + "="*60)
-    print("SUMMARY OF ALL MEAN DICE SCORES:")
-    print("="*60)
+    # Print summary 
+   
+    print("SUMMARY :")
+    
     for experiment_name, mean_dice in mean_dice_scores.items():
         print(f"{experiment_name}: {mean_dice:.4f}")
-    print("="*60)
-
+    
+    #save results 
     with open(args.output_json, 'w') as f:
         json.dump(all_metrics, f, indent=4)
     
-    print(f"\nSaved all metrics to: {args.output_json}") 
+    

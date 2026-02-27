@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import wandb
 import torchmetrics
 
-# Import model and dataset classes 
+
 from model import ViTBackboneNet, Classifier, SingleScanModelQuad
 from dataset import QuadImageDataset, get_default_transform_quad, get_validation_transform_quad, quad_image_collate_fn
 
@@ -133,7 +133,7 @@ class QuadInputBinaryClassificationLightningModule(pl.LightningModule):
         self.val_auroc.reset()
 
     def configure_optimizers(self):
-        # Pass only the trainable parameters to the optimizer
+       
         trainable_params = filter(lambda p: p.requires_grad, self.parameters())
         optimizer = torch.optim.Adam(trainable_params, lr=self.config['optim']['lr'], weight_decay=self.config['optim']['weight_decay'])
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2) # Consider config for T_0, T_mult
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     torch.set_float32_matmul_precision('medium')
     import argparse
     parser = argparse.ArgumentParser()
-    # Update default config path if needed for quad input specific config
+    
     parser.add_argument('--config', type=str, default="config_finetune.yml")
     args = parser.parse_args()
 

@@ -19,12 +19,12 @@ class DualInputBinaryClassificationLightningModule(pl.LightningModule):
         self.save_hyperparameters(config)
         self.config = config
         
-        # Create ViT backbone
+        # load backbone
         self.backbone = ViTBackboneNet(
             simclr_ckpt_path=config['simclrvit']['ckpt_path']
         )
         
-        # Classifier uses 768-dim features (from mean pooling of two 768-dim features)
+        
         self.classifier = Classifier(d_model=768, num_classes=1)
         self.model = SingleScanModelBP(self.backbone, self.classifier)
         
@@ -32,7 +32,7 @@ class DualInputBinaryClassificationLightningModule(pl.LightningModule):
         self.best_val_auroc = float('-inf')
         self.validation_step_outputs = []
 
-        # Initialize metrics for binary classification
+        # Initialize metrics 
         self.train_accuracy = torchmetrics.Accuracy(task="binary")
         self.train_precision = torchmetrics.Precision(task="binary")
         self.train_recall = torchmetrics.Recall(task="binary")
@@ -45,7 +45,7 @@ class DualInputBinaryClassificationLightningModule(pl.LightningModule):
         self.val_f1 = torchmetrics.F1Score(task="binary")
         self.val_auroc = torchmetrics.AUROC(task="binary")
 
-        # Freeze backbone if specified
+        # Freeze backbone
         if str(config['train']['freeze']).lower() == "yes":
             for param in self.model.backbone.parameters():
                 param.requires_grad = False
@@ -132,7 +132,7 @@ class DualInputBinaryClassificationLightningModule(pl.LightningModule):
         self.val_auroc.reset()
 
     def configure_optimizers(self):
-        # Pass only the trainable parameters to the optimizer
+        # Pass only the trainable parameters to  optimizer
         trainable_params = filter(lambda p: p.requires_grad, self.parameters())
         optimizer = torch.optim.Adam(trainable_params, lr=self.config['optim']['lr'], weight_decay=self.config['optim']['weight_decay'])
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2) # Consider config for T_0, T_mult
@@ -165,9 +165,7 @@ class DualInputBinaryClassificationDataModule(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    print("--- GPU Information ---")
-    print(f"Is CUDA available?       {torch.cuda.is_available()}")
-    print(f"CUDA device count:       {torch.cuda.device_count()}")
+ 
     if torch.cuda.is_available():
         print(f"Current CUDA device:     {torch.cuda.current_device()}")
         print(f"CUDA device name:        {torch.cuda.get_device_name(torch.cuda.current_device())}")
@@ -177,7 +175,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     # Update default config path if needed for dual input specific config
-    parser.add_argument('--config', type=str, default="config_finetune.yml") # Potentially a new config
+    parser.add_argument('--config', type=str, default="config_finetune.yml") 
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:

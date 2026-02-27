@@ -80,7 +80,7 @@ class SegmentationLightningModule(pl.LightningModule):
         self.val_metric.reset()
     def configure_optimizers(self):
         t = self.config['training']
-        # Pass only the trainable parameters to the optimizer
+       
         trainable_params = filter(lambda p: p.requires_grad, self.parameters())
         opt = torch.optim.AdamW(trainable_params, lr=float(t['lr']), weight_decay=float(t['weight_decay']))
         sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=t['max_epochs'], eta_min=1e-6)

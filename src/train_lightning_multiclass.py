@@ -78,7 +78,7 @@ class MultiClassSequenceLightningModule(pl.LightningModule):
         self.validation_step_outputs.clear()
 
     def configure_optimizers(self):
-        # Pass only the trainable parameters to the optimizer
+        # Pass selected parameters to the optimizer
         trainable_params = filter(lambda p: p.requires_grad, self.parameters())
         optimizer = torch.optim.Adam(trainable_params, lr=self.config['optim']['lr'], weight_decay=self.config['optim']['weight_decay'])
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2)

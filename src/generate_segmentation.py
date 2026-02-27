@@ -10,7 +10,7 @@ from monai.inferers import sliding_window_inference
 from monai.data import decollate_batch
 from monai.savers import NiftiSaver
 
-# Import from this directory's files
+
 from segmentation_model import ViTUNETRSegmentationModel
 
 def load_model_for_inference(config, state_dict):
@@ -39,7 +39,7 @@ def preprocess_image(image_path, config):
     """
     img_size = tuple(config['model']['img_size'])
     
-    # These are the validation/test transforms from your dataset
+    # val transforms 
     transforms = Compose([
         LoadImaged(keys=['image']),
         EnsureChannelFirstd(keys=['image']),
@@ -64,11 +64,11 @@ def generate_segmentation(model, image_tensor, config):
             overlap=0.5
         )
     
-    # Apply sigmoid and threshold to get binary mask
+    # apply treshold
     pred = torch.sigmoid(pred)
     pred = (pred > 0.5).float()
     
-    # decollate into a list of tensors, should be just one
+    # decollate into a list of tensors
     pred = decollate_batch(pred)[0]
     return pred
 
@@ -77,28 +77,27 @@ def save_segmentation(segmentation_tensor, meta_dict, output_path):
     """
     Saves the segmentation mask to a file.
     """
-    # Use MONAI's NiftiSaver to preserve the original affine and header
+   
     saver = NiftiSaver(output_dir=os.path.dirname(output_path), 
                        output_postfix="", 
                        output_ext=".nii.gz",
                        separate_folder=False)
     
-    # The saver expects a batch, so add a channel dim if it's not there
+    # add chanel dim if not present 
     if len(segmentation_tensor.shape) == 3:
         segmentation_tensor = segmentation_tensor.unsqueeze(0)
 
-    # NiftiSaver will use the filename from metadata and save it to output_dir
-    # We will rename it to the desired output_path
+   
     saver.save(segmentation_tensor, meta_dict)
     
-    # Construct the path MONAI saved to
+   
     original_filename = os.path.basename(meta_dict.get('filename_or_obj', 'segmentation'))
-    # remove original extension
+   
     original_filename_no_ext = original_filename.split('.')[0]
     
     saved_path = os.path.join(os.path.dirname(output_path), f"{original_filename_no_ext}.nii.gz")
     
-    # Rename the file to the user-specified output_path
+   
     if os.path.exists(output_path):
         os.remove(output_path)
     os.rename(saved_path, output_path)
@@ -125,12 +124,12 @@ if __name__ == "__main__":
     config = checkpoint['hyper_parameters']
     state_dict = checkpoint['state_dict']
 
-    # Override SimCLR path if a path is provided
+    # Override backbone path 
     if args.simclr_checkpoint_path:
         print(f"Overriding SimCLR checkpoint path with: {args.simclr_checkpoint_path}")
         config['pretrain']['simclr_checkpoint_path'] = args.simclr_checkpoint_path
 
-    # Create output directory if it doesn't exist
+    
     os.makedirs(args.output_dir, exist_ok=True)
 
     print("1. Loading model...")
@@ -142,7 +141,7 @@ if __name__ == "__main__":
     print("3. Generating segmentation...")
     segmentation_tensor = generate_segmentation(model, image_tensor, config)
     
-    # --- Generate output path ---
+   
     image_filename = os.path.basename(args.image_path)
     name, ext = os.path.splitext(image_filename)
     if ext == ".gz":
@@ -151,7 +150,7 @@ if __name__ == "__main__":
     
     output_filename = f"{name}_seg{ext}"
     output_path = os.path.join(args.output_dir, output_filename)
-    # ---------------------------
+    
 
     print(f"4. Saving segmentation to {output_path}...")
     save_segmentation(segmentation_tensor.cpu(), meta_dict, output_path)

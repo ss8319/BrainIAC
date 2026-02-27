@@ -8,7 +8,7 @@ from monai.transforms import (
 )
 from train_lightning_multiclass import MultiClassSequenceLightningModule
 
-# Add safe globals for MONAI MetaTensor and numpy objects to handle PyTorch 2.6 compatibility
+
 try:
     from monai.data.meta_tensor import MetaTensor
     torch.serialization.add_safe_globals([MetaTensor])
@@ -21,15 +21,15 @@ try:
 except ImportError:
     pass
 
-# ---- USER-DEFINED PATHS AND SETTINGS ----
-# IMPORTANT: Please update these paths before running the script.
-nifti_path = ""  # Single image for saliency generation
+# ---- hardcoded paths ----
+
+nifti_path = ""  
 checkpoint_path = ""
 config_path = ""
 output_dir = ""
-layer = -1  # Transformer layer index to visualize (-1 for last layer)
-img_size = (96, 96, 96)  # Input image size (DxHxW), should match training
-patch_size = 16  # ViT patch size, should match training
+layer = -1  
+img_size = (96, 96, 96) 
+patch_size = 16  # ViT patch siz  should match training
 # -----------------------------------------
 
 def get_preprocessing_transform(img_size):

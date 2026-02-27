@@ -62,7 +62,7 @@ def apply_perturbation(image_tensor, p_type, p_param):
     if p_type == "contrast":
         perturbed_tensor = AdjustContrast(gamma=p_param)(image_tensor_b)
     elif p_type == "bias_field":
-        image_tensor_no_channel = image_tensor_b.squeeze(1) # Shape becomes [B, H, W, D]
+        image_tensor_no_channel = image_tensor_b.squeeze(1) # Shape  [B, H, W, D]
         transform = RandBiasField(prob=1.0, coeff_range=(p_param, p_param))
         perturbed_tensor_no_channel = transform(image_tensor_no_channel)
         perturbed_tensor = perturbed_tensor_no_channel.unsqueeze(1) # Add channel dim back
@@ -88,9 +88,9 @@ def run_perturbation_analysis(model, dataloader, dataset_config, p_config):
                 labels = batch['label']
                 pat_ids = batch.get('pat_id', [str(batch_idx)])
             elif image_type in ["dual", "quad"]:
-                images = batch[0]  # shape: [B, N, ...]
+                images = batch[0]  
                 labels = batch[1]
-                # Try to get patient ids from dataset dataframe if available
+               
                 try:
                     pat_ids = [str(dataset.dataframe.iloc[batch_idx]['pat_id'])]
                 except Exception:
@@ -137,11 +137,11 @@ def run_perturbation_analysis(model, dataloader, dataset_config, p_config):
                 for p_type, p_settings in p_config["types"].items():
                     if not p_settings["enabled"]:
                         continue
-                    # For each slot (single: 1, dual: 2, quad: 4)
+                   
                     n_slots = 1 if image_type == "single" else images.shape[1]
                     for slot in range(n_slots):
                         for p_param in tqdm(p_settings["params"], desc=f"  - {p_type} (slot {slot})", leave=False):
-                            # Clone and perturb the relevant slot
+                         
                             if image_type == "single":
                                 perturbed_image = apply_perturbation(images[i].cpu(), p_type, p_param)
                                 model_input_gpu = perturbed_image.unsqueeze(0).to(DEVICE)
@@ -182,9 +182,9 @@ def main():
     print("="*50)
     for dataset_key in DATASETS_TO_RUN:
         if dataset_key not in DATASETS:
-            print(f"Error: Dataset '{dataset_key}' not found in DATASETS configuration!")
+            print(f"Error: Dataset '{dataset_key}' not found in config!")
             continue
-        print(f"\n🔄 Running analysis for {dataset_key}")
+       
         config = DATASETS[dataset_key]
         config['name'] = dataset_key
         try:
@@ -213,13 +213,13 @@ def main():
                 output_filename = f"perturbation_analysis_{dataset_key}_{p_type}.csv"
                 output_path = os.path.join(output_dir, output_filename)
                 df.to_csv(output_path, index=False)
-                print(f"✅ Analysis for {dataset_key} ({p_type}) complete. Results saved to {output_path}")
+                print(f"complete...")
         except Exception as e:
-            print(f"❌ Error processing {dataset_key}: {e}")
+            print(f"Error:{e}")
             import traceback
             traceback.print_exc()
             continue
-    print("\n=== PERTURBATION ANALYSIS COMPLETED ===")
+    
 
 if __name__ == "__main__":
     main() 

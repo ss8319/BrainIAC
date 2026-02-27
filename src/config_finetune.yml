@@ -5,9 +5,9 @@ data:
   size: [96,96,96]
   batch_size: 64
   num_workers: 4
-  csv_file: "/media/data/divyanshu/BrainIAC_V2/data/csvs/training_dataset_info.csv"
-  val_csv: "/media/data/divyanshu/BrainIAC_V2/data/csvs/validation_dataset_info.csv"
-  root_dir:  "/media/data/divyanshu/BrainIAC_V2/data/images"
+  csv_file: "./data/csvs/train.csv"
+  val_csv: "./data/csvs/val.csv"
+  root_dir:  "./"
 
 simclrvit:
   ckpt_path: "/media/data/divyanshu/BrainIAC_V2/checkpoints/BrainIAC.ckpt"
@@ -19,10 +19,10 @@ optim:
   clr: "no"
 
 logger:
-  save_dir: "/media/data/divyanshu/foundation_model/Brainiac_revision/simclrvit_finetuning/frozen_downstream_checkpoints"
-  save_name: "100percent_seq_tejas_cls_swinvit_0008_best-model-{epoch:02d}-{val_auc:.2f}"
-  run_name: "100percent_seq_tejas_cls_swinvit_0008"
-  project_name: "swinvitmae_finetune_downstream_frozen"
+  save_dir: "./checkpoints"
+  save_name: "best-model-{epoch:02d}-{val_auc:.2f}"
+  run_name: "finetune"
+  project_name: "fientune"
 gpu:
   visible_device: "0" 
 train: 

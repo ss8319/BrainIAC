@@ -8,7 +8,7 @@ from monai.transforms import (
 )
 from train_lightning_os import QuadInputBinaryClassificationLightningModule
 
-# Add safe globals for MONAI MetaTensor and numpy objects to handle PyTorch 2.6 compatibility
+
 try:
     from monai.data.meta_tensor import MetaTensor
     torch.serialization.add_safe_globals([MetaTensor])
@@ -22,13 +22,13 @@ except ImportError:
     pass
 
 # hardcoded paths
-nifti_path = ""  # Single image for saliency generation
+nifti_path = ""  
 checkpoint_path = ""
 config_path = ""
-output_dir = "" # Will be created in the current directory
-layer = -1  # Transformer layer index to visualize (-1 for last layer)
-img_size = (96, 96, 96)  # Input image size (DxHxW), should match training
-patch_size = 16  # ViT patch size, should match training
+output_dir = "" 
+layer = -1  # last layer for transformer
+img_size = (96, 96, 96)  # Input image size (DxHxW) should match training
+patch_size = 16  # ViT patch size should match training
 # -----------------------------------------
 
 def get_preprocessing_transform(img_size):
