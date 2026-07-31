@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=train_brainiac_debug
-#SBATCH --output=logs/train_%j.out
-#SBATCH --error=logs/train_%j.err
+#SBATCH --output=logs/28_2/train_%j.out
+#SBATCH --error=logs/28_2/train_%j.err
 #SBATCH --time=13:00:00
 #SBATCH --mem=39G
 #SBATCH --partition=gpu
@@ -37,4 +37,4 @@ else:
 # Run the script using uv
 echo "=== Starting Preprocessing ==="
 $UV_PYTHON train_lightning_mci.py \
---config config_adni_cn_ad_run1.yml
+--config config_adni_ft.yml
